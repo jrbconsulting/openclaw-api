@@ -2,7 +2,7 @@
 /**
  * Plugin Name: OpenClaw API
  * Description: WordPress REST API for OpenClaw remote site management
- * Version: 2.1.1
+ * Version: 2.1.2
  * Author: OpenClaw
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -262,7 +262,7 @@ function openclaw_create_post($request) {
     
     $post_data = [
         'post_title' => sanitize_text_field($data['title'] ?? 'Untitled'),
-        'post_content' => $data['content'] ?? '',
+        'post_content' => wp_kses_post($data['content'] ?? ''),
         'post_status' => $status,
         'post_author' => $author_id,
     ];
@@ -300,7 +300,7 @@ function openclaw_update_post($request) {
         $post_data['post_title'] = sanitize_text_field($data['title']);
     }
     if (isset($data['content'])) {
-        $post_data['post_content'] = $data['content'];
+        $post_data['post_content'] = wp_kses_post($data['content']);
     }
     if (isset($data['status'])) {
         $allowed_statuses = ['draft', 'pending', 'private', 'publish'];
@@ -571,7 +571,7 @@ function openclaw_create_page($request) {
     $page_id = wp_insert_post([
         'post_type' => 'page',
         'post_title' => sanitize_text_field($data['title'] ?? 'Untitled'),
-        'post_content' => $data['content'] ?? '',
+        'post_content' => wp_kses_post($data['content'] ?? ''),
         'post_status' => $status,
     ], true);
     if (is_wp_error($page_id)) return $page_id;
