@@ -2,7 +2,7 @@
 /**
  * Plugin Name: OpenClaw API
  * Description: WordPress REST API for OpenClaw remote site management
- * Version: 2.0.5
+ * Version: 2.1.0
  * Author: OpenClaw
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -84,6 +84,18 @@ add_action('rest_api_init', function() {
         'methods' => 'GET',
         'callback' => 'openclaw_get_media',
         'permission_callback' => function() { return openclaw_verify_token_and_can('media_read'); },
+    ]);
+    
+    register_rest_route('openclaw/v1', '/media', [
+        'methods' => 'POST',
+        'callback' => 'openclaw_upload_media',
+        'permission_callback' => function() { return openclaw_verify_token_and_can('media_upload'); },
+    ]);
+    
+    register_rest_route('openclaw/v1', '/media/(?P<id>\d+)', [
+        'methods' => 'DELETE',
+        'callback' => 'openclaw_delete_media',
+        'permission_callback' => function() { return openclaw_verify_token_and_can('media_delete'); },
     ]);
     
     // Pages
@@ -192,7 +204,7 @@ function openclaw_verify_token() {
 
 // Ping endpoint
 function openclaw_ping() {
-    return ['status' => 'ok', 'version' => '2.0.5', 'time' => current_time('mysql')];
+    return ['status' => 'ok', 'version' => '2.1.0', 'time' => current_time('mysql')];
 }
 
 // Site info
@@ -394,6 +406,112 @@ function openclaw_get_media($request) {
     return array_map(function($m) {
         return ['id' => $m->ID, 'title' => $m->post_title, 'url' => wp_get_attachment_url($m->ID)];
     }, $media);
+}
+
+// Upload media
+function openclaw_upload_media($request) {
+    // Check if file was uploaded
+    if (empty($_FILES['file'])) {
+        return new WP_Error('missing_file', 'No file uploaded. Use multipart/form-data with a "file" field.', ['status' => 400]);
+    }
+    
+    $file = $_FILES['file'];
+    
+    // Validate file upload errors
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        $error_messages = [
+            UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize directive',
+            UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE directive',
+            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+            UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+            UPLOAD_ERR_EXTENSION => 'File upload stopped by extension',
+        ];
+        $msg = $error_messages[$file['error']] ?? 'Unknown upload error';
+        return new WP_Error('upload_error', $msg, ['status' => 400]);
+    }
+    
+    // Validate file type (images only for security)
+    $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($mime_type, $allowed_types, true)) {
+        return new WP_Error('invalid_type', 'Only image files are allowed (JPEG, PNG, GIF, WebP, SVG)', ['status' => 400]);
+    }
+    
+    // Validate file size (max 10MB)
+    $max_size = 10 * 1024 * 1024;
+    if ($file['size'] > $max_size) {
+        return new WP_Error('file_too_large', 'File exceeds 10MB limit', ['status' => 400]);
+    }
+    
+    // Sanitize filename
+    $filename = sanitize_file_name($file['name']);
+    
+    // Prepare for WordPress upload
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    
+    // Use WordPress file upload handler
+    $upload = wp_handle_upload($file, ['test_form' => false]);
+    
+    if (isset($upload['error'])) {
+        return new WP_Error('upload_failed', $upload['error'], ['status' => 500]);
+    }
+    
+    // Create attachment
+    $attachment = [
+        'post_mime_type' => $upload['type'],
+        'post_title' => sanitize_text_field($request->get_param('title') ?: pathinfo($filename, PATHINFO_FILENAME)),
+        'post_content' => '',
+        'post_status' => 'inherit',
+    ];
+    
+    $attach_id = wp_insert_attachment($attachment, $upload['file']);
+    
+    if (is_wp_error($attach_id)) {
+        return new WP_Error('attachment_failed', $attach_id->get_error_message(), ['status' => 500]);
+    }
+    
+    // Generate metadata for images (thumbnails, etc.)
+    if (strpos($upload['type'], 'image/') === 0 && $upload['type'] !== 'image/svg+xml') {
+        $attach_data = wp_generate_attachment_metadata($attach_id, $upload['file']);
+        wp_update_attachment_metadata($attach_id, $attach_data);
+    }
+    
+    // Get the URL
+    $url = wp_get_attachment_url($attach_id);
+    
+    return [
+        'success' => true,
+        'id' => $attach_id,
+        'title' => get_the_title($attach_id),
+        'url' => $url,
+        'mime_type' => $upload['type'],
+        'size' => $file['size'],
+    ];
+}
+
+// Delete media
+function openclaw_delete_media($request) {
+    $id = (int) $request['id'];
+    
+    $attachment = get_post($id);
+    if (!$attachment || $attachment->post_type !== 'attachment') {
+        return new WP_Error('not_found', 'Media not found', ['status' => 404]);
+    }
+    
+    $deleted = wp_delete_attachment($id, true); // true = force delete (skip trash)
+    
+    if (!$deleted) {
+        return new WP_Error('delete_failed', 'Failed to delete media', ['status' => 500]);
+    }
+    
+    return ['success' => true, 'id' => $id];
 }
 
 // Pages
@@ -789,6 +907,8 @@ function openclaw_get_default_capabilities() {
         'tags_read' => true,
         'tags_create' => true,
         'media_read' => true,
+        'media_upload' => false,  // Off by default - enable in settings
+        'media_delete' => false,  // Off by default - enable in settings
         'users_read' => true,
         'plugins_read' => true,
         'plugins_search' => true,
@@ -878,7 +998,7 @@ function openclaw_api_admin_page() {
         'Posts' => ['posts_read', 'posts_create', 'posts_update', 'posts_delete'],
         'Pages' => ['pages_read', 'pages_create'],
         'Taxonomies' => ['categories_read', 'categories_create', 'tags_read', 'tags_create'],
-        'Media' => ['media_read'],
+        'Media' => ['media_read', 'media_upload', 'media_delete'],
         'Users' => ['users_read'],
         'Plugins' => ['plugins_read', 'plugins_search', 'plugins_install', 'plugins_activate', 'plugins_deactivate', 'plugins_update', 'plugins_delete'],
         'Site' => ['site_info'],
@@ -896,6 +1016,8 @@ function openclaw_api_admin_page() {
         'tags_read' => 'Read Tags',
         'tags_create' => 'Create Tags',
         'media_read' => 'Read Media',
+        'media_upload' => 'Upload Media',
+        'media_delete' => 'Delete Media',
         'users_read' => 'Read Users',
         'plugins_read' => 'List Plugins',
         'plugins_search' => 'Search Plugins (WordPress.org)',
@@ -1007,6 +1129,8 @@ function openclaw_api_admin_page() {
                 <tr><td>GET</td><td><code>/tags</code></td><td>tags_read</td><td>List tags</td></tr>
                 <tr><td>POST</td><td><code>/tags</code></td><td>tags_create</td><td>Create tag</td></tr>
                 <tr><td>GET</td><td><code>/media</code></td><td>media_read</td><td>List media</td></tr>
+                <tr><td>POST</td><td><code>/media</code></td><td>media_upload</td><td>Upload image (multipart/form-data)</td></tr>
+                <tr><td>DELETE</td><td><code>/media/{id}</code></td><td>media_delete</td><td>Delete media</td></tr>
                 <tr><td>GET</td><td><code>/users</code></td><td>users_read</td><td>List users</td></tr>
                 <tr><td>GET</td><td><code>/plugins</code></td><td>plugins_read</td><td>List installed plugins</td></tr>
                 <tr><td>GET</td><td><code>/plugins/search</code></td><td>plugins_search</td><td>Search WordPress.org</td></tr>
