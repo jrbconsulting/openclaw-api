@@ -145,49 +145,67 @@ class OpenClaw_FluentCRM_Module {
     // === IMPLEMENTATIONS ===
 
     public static function list_subscribers($request) {
+        global $wpdb;
+        
         $page = max(1, (int)($request->get_param('page') ?: 1));
         $per_page = min((int)($request->get_param('per_page') ?: 20), 100);
         $list_id = $request->get_param('list_id') ? (int)$request->get_param('list_id') : null;
         $tag_id = $request->get_param('tag_id') ? (int)$request->get_param('tag_id') : null;
         $search = $request->get_param('search') ? sanitize_text_field($request->get_param('search')) : null;
         $status = $request->get_param('status') ? sanitize_text_field($request->get_param('status')) : null;
-
-        $query = \FluentCRM\App\Models\Subscriber::query()->with(['lists', 'tags']);
-
+        
+        $table = $wpdb->prefix . 'fc_subscribers';
+        $lists_pivot = $wpdb->prefix . 'fc_subscriber_lists';
+        $tags_pivot = $wpdb->prefix . 'fc_subscriber_tags';
+        
+        $where = 'WHERE 1=1';
+        $join = '';
+        
         if ($list_id) {
-            $query->whereHas('lists', function($q) use ($list_id) { $q->where('id', $list_id); });
+            $join .= " JOIN $lists_pivot sl ON s.id = sl.subscriber_id";
+            $where .= $wpdb->prepare(' AND sl.list_id = %d', $list_id);
         }
         if ($tag_id) {
-            $query->whereHas('tags', function($q) use ($tag_id) { $q->where('id', $tag_id); });
+            $join .= " JOIN $tags_pivot st ON s.id = st.subscriber_id";
+            $where .= $wpdb->prepare(' AND st.tag_id = %d', $tag_id);
         }
         if ($status) {
-            $query->where('status', $status);
+            $where .= $wpdb->prepare(' AND s.status = %s', $status);
         }
         if ($search) {
-            // Escape LIKE wildcards
-            $search = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-            $query->where(function($q) use ($search) {
-                $q->where('email', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
-            });
+            $search_like = '%' . $wpdb->esc_like($search) . '%';
+            $where .= $wpdb->prepare(
+                ' AND (s.email LIKE %s OR s.first_name LIKE %s OR s.last_name LIKE %s)',
+                $search_like, $search_like, $search_like
+            );
         }
-
-        $total = $query->count();
-        $subscribers = $query->skip(($page - 1) * $per_page)
-            ->take($per_page)
-            ->get()
-            ->map(function($s) {
-                return self::format_subscriber($s);
-            });
-
+        
+        $total = $wpdb->get_var("SELECT COUNT(DISTINCT s.id) FROM $table s $join $where");
+        $offset = ($page - 1) * $per_page;
+        
+        $subscribers = $wpdb->get_results(
+            "SELECT DISTINCT s.id, s.email, s.first_name, s.last_name, s.status, s.created_at 
+             FROM $table s $join $where 
+             ORDER BY s.created_at DESC 
+             LIMIT $per_page OFFSET $offset"
+        );
+        
         return new WP_REST_Response([
-            'data' => $subscribers,
+            'data' => array_map(function($s) {
+                return [
+                    'id' => (int)$s->id,
+                    'email' => $s->email,
+                    'first_name' => $s->first_name,
+                    'last_name' => $s->last_name,
+                    'status' => $s->status,
+                    'created_at' => $s->created_at
+                ];
+            }, $subscribers ?: []),
             'meta' => [
-                'total' => $total,
+                'total' => (int)$total,
                 'page' => $page,
                 'per_page' => $per_page,
-                'pages' => ceil($total / $per_page)
+                'pages' => $total ? ceil($total / $per_page) : 0
             ]
         ], 200);
     }
@@ -348,25 +366,41 @@ class OpenClaw_FluentCRM_Module {
     }
 
     public static function get_campaign($request) {
-        $campaign = \FluentCRM\App\Models\Campaign::with('emails')->find($request->get_param('id'));
-
+        global $wpdb;
+        $id = (int)$request->get_param('id');
+        $table = $wpdb->prefix . 'fc_campaigns';
+        
+        $campaign = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table WHERE id = %d", $id
+        ));
+        
         if (!$campaign) {
             return new WP_REST_Response(['error' => 'Campaign not found'], 404);
         }
-
+        
         return new WP_REST_Response($campaign, 200);
     }
 
     public static function send_campaign($request) {
-        $campaign = \FluentCRM\App\Models\Campaign::find($request->get_param('id'));
-
+        global $wpdb;
+        $id = (int)$request->get_param('id');
+        $table = $wpdb->prefix . 'fc_campaigns';
+        
+        $campaign = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table WHERE id = %d", $id
+        ));
+        
         if (!$campaign) {
             return new WP_REST_Response(['error' => 'Campaign not found'], 404);
         }
-
-        // Initiate send via FluentCRM
-        do_action('fluentcrm_campaign_scheduled', $campaign);
-
+        
+        // Trigger FluentCRM's campaign send
+        if (function_exists('fluentcrm_scheduled_campaign')) {
+            fluentcrm_scheduled_campaign($campaign);
+        } else {
+            do_action('fluentcrm_campaign_scheduled', $campaign);
+        }
+        
         return new WP_REST_Response([
             'success' => true,
             'message' => 'Campaign send initiated',
@@ -375,46 +409,84 @@ class OpenClaw_FluentCRM_Module {
     }
 
     public static function list_sequences($request) {
-        $sequences = \FluentCRM\App\Models\Sequence::orderBy('title')->get();
+        global $wpdb;
+        $table = $wpdb->prefix . 'fc_sequences';
+        
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+            return new WP_REST_Response([], 200);
+        }
+        
+        $sequences = $wpdb->get_results("SELECT * FROM $table ORDER BY title ASC");
         return new WP_REST_Response($sequences, 200);
     }
 
     public static function add_to_list($request) {
-        $subscriber = \FluentCRM\App\Models\Subscriber::find($request->get_param('id'));
-        $list_id = $request->get_json_params()['list_id'] ?? null;
-
-        if (!$subscriber || !$list_id) {
+        $subscriber_id = (int)$request->get_param('id');
+        $list_id = (int)($request->get_json_params()['list_id'] ?? 0);
+        
+        if (!$subscriber_id || !$list_id) {
             return new WP_REST_Response(['error' => 'Invalid request'], 400);
         }
-
-        $subscriber->lists()->syncWithoutDetaching([$list_id]);
-
+        
+        // Use FluentCRM helper if available
+        if (function_exists('fluentcrm_add_contact_to_list')) {
+            fluentcrm_add_contact_to_list($subscriber_id, $list_id);
+        } else {
+            global $wpdb;
+            $table = $wpdb->prefix . 'fc_subscriber_lists';
+            $wpdb->query($wpdb->prepare(
+                "INSERT IGNORE INTO $table (subscriber_id, list_id, status, created_at) VALUES (%d, %d, 'subscribed', NOW())",
+                $subscriber_id, $list_id
+            ));
+        }
+        
         return new WP_REST_Response(['success' => true], 200);
     }
 
     public static function add_tag($request) {
-        $subscriber = \FluentCRM\App\Models\Subscriber::find($request->get_param('id'));
-        $tag_id = $request->get_json_params()['tag_id'] ?? null;
-
-        if (!$subscriber || !$tag_id) {
+        $subscriber_id = (int)$request->get_param('id');
+        $tag_id = (int)($request->get_json_params()['tag_id'] ?? 0);
+        
+        if (!$subscriber_id || !$tag_id) {
             return new WP_REST_Response(['error' => 'Invalid request'], 400);
         }
-
-        $subscriber->tags()->syncWithoutDetaching([$tag_id]);
-
+        
+        // Use FluentCRM helper if available
+        if (function_exists('fluentcrm_add_tag_to_subscriber')) {
+            fluentcrm_add_tag_to_subscriber($subscriber_id, $tag_id);
+        } else {
+            global $wpdb;
+            $table = $wpdb->prefix . 'fc_subscriber_tags';
+            $wpdb->query($wpdb->prepare(
+                "INSERT IGNORE INTO $table (subscriber_id, tag_id, created_at) VALUES (%d, %d, NOW())",
+                $subscriber_id, $tag_id
+            ));
+        }
+        
         return new WP_REST_Response(['success' => true], 200);
     }
 
     public static function get_stats($request) {
+        global $wpdb;
+        
+        $subscribers_table = $wpdb->prefix . 'fc_subscribers';
+        $lists_table = $wpdb->prefix . 'fc_lists';
+        $tags_table = $wpdb->prefix . 'fc_tags';
+        $campaigns_table = $wpdb->prefix . 'fc_campaigns';
+        
+        $total = $wpdb->get_var("SELECT COUNT(*) FROM $subscribers_table");
+        $active = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $subscribers_table WHERE status = %s", 'subscribed'));
+        $unsubscribed = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $subscribers_table WHERE status = %s", 'unsubscribed'));
+        $pending = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $subscribers_table WHERE status = %s", 'pending'));
+        
         return new WP_REST_Response([
-            'total_subscribers' => \FluentCRM\App\Models\Subscriber::count(),
-            'active' => \FluentCRM\App\Models\Subscriber::where('status', 'subscribed')->count(),
-            'unsubscribed' => \FluentCRM\App\Models\Subscriber::where('status', 'unsubscribed')->count(),
-            'pending' => \FluentCRM\App\Models\Subscriber::where('status', 'pending')->count(),
-            'lists' => \FluentCRM\App\Models\Lists::count(),
-            'tags' => \FluentCRM\App\Models\Tag::count(),
-            'campaigns' => \FluentCRM\App\Models\Campaign::count(),
-            'emails_sent' => \FluentCRM\App\Models\CampaignEmail::where('status', 'sent')->count() ?: 0
+            'total_subscribers' => (int)$total,
+            'active' => (int)$active,
+            'unsubscribed' => (int)$unsubscribed,
+            'pending' => (int)$pending,
+            'lists' => (int)$wpdb->get_var("SELECT COUNT(*) FROM $lists_table"),
+            'tags' => (int)$wpdb->get_var("SELECT COUNT(*) FROM $tags_table"),
+            'campaigns' => (int)$wpdb->get_var("SELECT COUNT(*) FROM $campaigns_table")
         ], 200);
     }
 
