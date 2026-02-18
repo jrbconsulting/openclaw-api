@@ -465,17 +465,17 @@ class OpenClaw_FluentCRM_Module {
         
         if (!empty($list_ids)) {
             $subscribers_table = $wpdb->prefix . 'fc_subscribers';
-            $lists_pivot = $wpdb->prefix . 'fc_subscriber_lists';
+            $pivot_table = $wpdb->prefix . 'fc_subscriber_pivot';  // FluentCRM uses unified pivot table
             $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
             
             $list_placeholders = implode(',', array_fill(0, count($list_ids), '%d'));
             
-            // Get subscribers from specified lists
+            // Get subscribers from specified lists using pivot table
             $subscribers = $wpdb->get_results($wpdb->prepare(
                 "SELECT DISTINCT s.id, s.email, s.first_name, s.last_name 
                  FROM $subscribers_table s 
-                 INNER JOIN $lists_pivot sl ON s.id = sl.subscriber_id 
-                 WHERE sl.list_id IN ($list_placeholders) AND s.status = 'subscribed'",
+                 INNER JOIN $pivot_table p ON s.id = p.subscriber_id 
+                 WHERE p.object_id IN ($list_placeholders) AND p.object_type = 'list' AND s.status = 'subscribed'",
                 ...$list_ids
             ));
             
@@ -642,11 +642,12 @@ class OpenClaw_FluentCRM_Module {
         }
         
         global $wpdb;
-        $table = $wpdb->prefix . 'fc_subscriber_lists';
+        // FluentCRM uses unified pivot table for lists AND tags
+        $table = $wpdb->prefix . 'fc_subscriber_pivot';
         
         // Check if already in list
         $existing = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM $table WHERE subscriber_id = %d AND list_id = %d",
+            "SELECT id FROM $table WHERE subscriber_id = %d AND object_id = %d AND object_type = 'list'",
             $subscriber_id, $list_id
         ));
         
@@ -654,10 +655,11 @@ class OpenClaw_FluentCRM_Module {
             return new WP_REST_Response(['success' => true, 'message' => 'Already in list', 'existing_id' => (int)$existing], 200);
         }
         
-        // Insert directly
+        // Insert into pivot table
         $result = $wpdb->insert($table, [
             'subscriber_id' => $subscriber_id,
-            'list_id' => $list_id,
+            'object_id' => $list_id,
+            'object_type' => 'list',
             'status' => 'subscribed',
             'created_at' => current_time('mysql')
         ]);
