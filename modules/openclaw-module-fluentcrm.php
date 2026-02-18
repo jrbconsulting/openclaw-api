@@ -471,11 +471,14 @@ class OpenClaw_FluentCRM_Module {
             $list_placeholders = implode(',', array_fill(0, count($list_ids), '%d'));
             
             // Get subscribers from specified lists using pivot table
+            // FluentCRM uses full class name for object_type: 'FluentCrm\App\Models\Lists'
             $subscribers = $wpdb->get_results($wpdb->prepare(
                 "SELECT DISTINCT s.id, s.email, s.first_name, s.last_name 
                  FROM $subscribers_table s 
                  INNER JOIN $pivot_table p ON s.id = p.subscriber_id 
-                 WHERE p.object_id IN ($list_placeholders) AND p.object_type = 'list' AND s.status = 'subscribed'",
+                 WHERE p.object_id IN ($list_placeholders) 
+                 AND p.object_type = 'FluentCrm\\App\\Models\\Lists' 
+                 AND s.status = 'subscribed'",
                 ...$list_ids
             ));
             
