@@ -272,9 +272,6 @@ class OpenClaw_FluentCRM_Module {
             'campaign_emails_count' => count($campaign_emails)
         ], 200);
     }
-            'all_fc_tables' => $table_names
-        ], 200);
-    }
 
     public static function get_subscriber($request) {
         $subscriber = \FluentCRM\App\Models\Subscriber::with(['lists', 'tags'])
