@@ -246,27 +246,32 @@ class OpenClaw_FluentCRM_Module {
         global $wpdb;
         $old_table = $wpdb->prefix . 'fc_subscriber_lists';
         $pivot_table = $wpdb->prefix . 'fc_subscriber_pivot';
+        $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
         
-        // First check what fc_ tables exist
-        $all_fc_tables = $wpdb->get_results("SHOW TABLES LIKE '{$wpdb->prefix}fc_%'", ARRAY_N);
-        $table_names = array_map(function($t) { return $t[0]; }, $all_fc_tables);
+        // Check campaign emails for a campaign
+        $campaign_id = (int)($request->get_param('campaign_id') ?: 13);
+        $campaign_emails = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $campaign_emails_table WHERE campaign_id = %d",
+            $campaign_id
+        ));
         
-        // Check pivot table structure
+        // Check pivot table
         $pivot_exists = $wpdb->get_var("SHOW TABLES LIKE '$pivot_table'") === $pivot_table;
-        $pivot_columns = [];
         $pivot_data = [];
         
         if ($pivot_exists) {
-            $pivot_columns = $wpdb->get_results("DESCRIBE $pivot_table");
-            $pivot_data = $wpdb->get_results("SELECT * FROM $pivot_table LIMIT 20");
+            $pivot_data = $wpdb->get_results("SELECT * FROM $pivot_table LIMIT 30");
         }
         
         return new WP_REST_Response([
-            'old_expected_table' => $old_table,
             'pivot_table' => $pivot_table,
             'pivot_exists' => $pivot_exists,
-            'pivot_columns' => $pivot_columns,
             'pivot_data' => $pivot_data,
+            'campaign_emails_table' => $campaign_emails_table,
+            'campaign_emails_for_campaign_' . $campaign_id => $campaign_emails,
+            'campaign_emails_count' => count($campaign_emails)
+        ], 200);
+    }
             'all_fc_tables' => $table_names
         ], 200);
     }
