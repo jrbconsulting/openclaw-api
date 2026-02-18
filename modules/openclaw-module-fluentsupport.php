@@ -249,7 +249,7 @@ class OpenClaw_FluentSupport_Module {
         $data = self::format_native_ticket($ticket);
         
         // Get responses
-        $responses_table = $wpdb->prefix . 'fs_responses';
+        $responses_table = $wpdb->prefix . 'fs_conversations';
         $responses = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM $responses_table WHERE ticket_id = %d ORDER BY created_at ASC",
             $ticket_id
@@ -423,7 +423,7 @@ class OpenClaw_FluentSupport_Module {
         }
         
         $tickets_table = $wpdb->prefix . 'fs_tickets';
-        $responses_table = $wpdb->prefix . 'fs_responses';
+        $conversations_table = $wpdb->prefix . 'fs_conversations';
         
         // Verify ticket exists
         $ticket = $wpdb->get_row($wpdb->prepare("SELECT id, customer_id FROM $tickets_table WHERE id = %d", $ticket_id));
