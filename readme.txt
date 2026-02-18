@@ -3,12 +3,12 @@ Contributors: openclaw
 Tags: api, rest, remote, management, openclaw
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 2.0.5
+Stable tag: 2.5.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-REST API for OpenClaw remote site management with fine-grained capability controls.
+REST API for OpenClaw remote site management with fine-grained capability controls and plugin integrations.
 
 == Description ==
 
@@ -20,9 +20,21 @@ plugin management, and site administration.
 
 * **Content Management** - Create, update, and delete posts, pages, categories, and tags
 * **Plugin Management** - Search, install, activate, deactivate, update, and delete plugins
+* **Plugin Integrations** - Auto-detecting modules for FluentCRM, FluentForms, FluentCommunity, FluentProject, FluentSupport, PublishPress
 * **Fine-grained Permissions** - Enable only the capabilities you need
 * **Token-based Authentication** - Secure API token system (works behind Cloudflare)
 * **WordPress.org Integration** - Search and install plugins directly from the repository
+
+**Integration Modules:**
+
+Modules automatically activate when their required plugins are installed:
+
+* **FluentForms** - Forms, entries, submissions
+* **FluentCommunity** - Posts, groups, members
+* **FluentCRM** - Subscribers, lists, campaigns
+* **FluentProject** - Projects, tasks, boards
+* **FluentSupport** - Tickets, responses, customers
+* **PublishPress Statuses** - Custom post statuses
 
 **Security:**
 
@@ -130,6 +142,54 @@ curl -X POST \
 | DELETE | `/plugins/{slug}` | plugins_delete | Delete plugin |
 
 == Changelog ==
+
+= 2.3.3 =
+* Fixed: Core capabilities form no longer clears module capability settings
+* Root cause: Core handler was using filtered function that included module caps
+* Solution: New openclaw_get_core_capabilities() returns only core capabilities
+
+= 2.3.2 =
+* Fixed: Core and Module capabilities forms now save independently without clearing each other
+* Two separate save handlers - each preserves the other section's values
+
+= 2.3.1 =
+* Fixed: Capabilities form now preserves both core and module settings when saving either section
+* Security: Mass assignment protection in FluentCRM subscriber updates (field whitelist)
+* Security: Input validation in FluentProject updates (status/priority allowlists)
+* Security: Content sanitization in FluentProject comments (wp_kses_post)
+* Security: User ID validation in assignment functions
+* Security: CSV injection prevention in FluentForms export
+
+= 2.3.0 =
+* Added plugin/theme ZIP upload endpoint (POST /plugins/upload)
+* Added automatic update checking from GitHub (no configuration needed)
+* Added one-click update button when newer version available
+* Added dynamic module capability registration via filter hook
+* Added "Detected Integrations" section showing active module capabilities
+* Fixed module detection for FluentCommunity, FluentProject, FluentSupport
+* Added `plugins_upload` capability for ZIP uploads (off by default)
+* Module capabilities: each detected plugin shows its own capability toggles
+* Security: ZIP upload validates structure, scans for suspicious files
+* Security: Max 10MB upload size for plugins/themes
+
+= 2.2.1 =
+* Fixed module detection timing (routes now register correctly at plugins_loaded)
+* Fixed FluentProject detection (Fluent Boards plugin slug)
+* Fixed FluentSupport detection (fluent-support plugin slug)
+* Added GitHub auto-updater (updates from github.com/openclaw/openclaw-api)
+* Added `/self-update` endpoint for remote plugin updates
+* Fixed syntax error in FluentSupport module (extra closing brace)
+
+= 2.2.0 =
+* Added modular integration system with auto-detection
+* Added FluentForms module (forms, entries, submissions)
+* Added FluentCommunity module (posts, groups, members)
+* Added FluentCRM module (subscribers, lists, campaigns)
+* Added FluentProject module (projects, tasks, boards)
+* Added FluentSupport module (tickets, responses)
+* Added PublishPress Statuses module (custom statuses API)
+* Modules auto-activate when their plugins are installed
+* Settings page shows active/inactive module status
 
 = 2.0.5 =
 * SECURITY: Added input sanitization for API token header (wp_unslash, sanitize_text_field)
