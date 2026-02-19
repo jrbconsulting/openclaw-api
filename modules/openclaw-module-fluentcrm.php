@@ -416,8 +416,14 @@ class OpenClaw_FluentCRM_Module {
         ];
         
         $inserted = $wpdb->insert($table, $campaign_data);
-        if (!$inserted) {
-            return new WP_REST_Response(['error' => 'Failed to create campaign', 'wpdb_error' => $wpdb->last_error], 500);
+        if (!$inserted || $wpdb->insert_id == 0) {
+            return new WP_REST_Response([
+                'error' => 'Failed to create campaign',
+                'wpdb_error' => $wpdb->last_error,
+                'inserted' => $inserted,
+                'insert_id' => $wpdb->insert_id,
+                'table' => $table
+            ], 500);
         }
         
         $campaign_id = $wpdb->insert_id;
