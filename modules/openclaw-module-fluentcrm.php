@@ -443,8 +443,7 @@ class OpenClaw_FluentCRM_Module {
                  FROM $subscribers_table s 
                  INNER JOIN $pivot_table p ON s.id = p.subscriber_id 
                  WHERE p.object_id IN ($list_ids_string) 
-                 AND p.object_type = 'list' 
-                 AND s.status = 'subscribed'";
+                 AND p.object_type = 'list'"
             
             $subscribers = $wpdb->get_results($sql);
             
