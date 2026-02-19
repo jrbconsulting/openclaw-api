@@ -3,7 +3,7 @@ Contributors: openclaw
 Tags: api, rest, remote, management, openclaw
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 2.6.41
+Stable tag: 2.6.43
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -142,6 +142,12 @@ curl -X POST \
 | DELETE | `/plugins/{slug}` | plugins_delete | Delete plugin |
 
 == Changelog ==
+
+= 2.6.43 =
+* Fixed: FluentCRM campaign recipients showing as "unknown" in fallback mode
+* Fixed: FluentCRM campaign emails failing to send in fallback mode
+* Improvement: Manual fallback now populates email, first_name, and last_name in campaign email records
+* Improvement: send_campaign fallback now fires 'fluentcrm_campaign_status_changed' action to trigger processing
 
 = 2.3.3 =
 * Fixed: Core capabilities form no longer clears module capability settings

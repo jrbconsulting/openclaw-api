@@ -558,9 +558,12 @@ class OpenClaw_FluentCRM_Module {
                 $result = $wpdb->insert($campaign_emails_table, [
                     'campaign_id' => $campaign_id,
                     'subscriber_id' => $sub->id,
-                    'status' => 'pending',
-                    'created_at' => current_time('mysql'),
-                    'updated_at' => current_time('mysql')
+                    'email'       => $sub->email,
+                    'first_name'  => $sub->first_name,
+                    'last_name'   => $sub->last_name,
+                    'status'      => 'pending',
+                    'created_at'  => current_time('mysql'),
+                    'updated_at'  => current_time('mysql')
                 ]);
                 if ($result !== false) {
                     $subscriber_count++;
@@ -759,8 +762,12 @@ class OpenClaw_FluentCRM_Module {
         // Update campaign status
         $wpdb->update($table, [
             'status' => 'published',
-            'scheduled_at' => current_time('mysql')
+            'scheduled_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql')
         ], ['id' => $id]);
+        
+        // Try to trigger common FluentCRM hooks even in fallback mode
+        do_action('fluentcrm_campaign_status_changed', (object)['id' => $id], 'published');
         
         return new WP_REST_Response([
             'success' => true,
