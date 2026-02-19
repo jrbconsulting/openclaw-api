@@ -426,19 +426,22 @@ class OpenClaw_FluentCRM_Module {
         $list_ids = $data['list_ids'] ?? [];
         $subscriber_count = 0;
         
-        if (!empty($list_ids) && class_exists('FluentCRM\App\Models\Subscriber')) {
+        if (!empty($list_ids) && class_exists('FluentCRM\App\Models\Subscriber') && class_exists('FluentCRM\App\Models\Lists')) {
             $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
             
-            // Use FluentCRM's Eloquent model to get subscribers by list
-            // Note: FluentCRM models handle table prefixes automatically
-            // Use raw whereExists instead of whereIn with closure to avoid double prefix
-            $subscribers = \FluentCRM\App\Models\Subscriber::whereExists(function($query) use ($list_ids) {
-                $query->selectRaw(1)
-                      ->from('fc_subscriber_pivot')
-                      ->whereColumn('fc_subscriber_pivot.subscriber_id', 'fc_subscribers.id')
-                      ->where('fc_subscriber_pivot.object_type', 'list')
-                      ->whereIn('fc_subscriber_pivot.object_id', $list_ids);
-            })->get();
+            // Get subscribers by using FluentCRM's lists relationship
+            // First get all subscribers, then filter by list membership
+            $allSubscribers = \FluentCRM\App\Models\Subscriber::whereIn('status', ['subscribed', 'pending'])->get();
+            $subscribers = [];
+            
+            foreach ($allSubscribers as $sub) {
+                $subscriberLists = $sub->lists()->whereIn('id', $list_ids)->get();
+                if ($subscriberLists->count() > 0) {
+                    $subscribers[] = $sub;
+                }
+            }
+            
+            error_log("OpenClaw API campaign found: " . count($subscribers) . " subscribers via lists()");
             
             error_log("OpenClaw API campaign Eloquent query found: " . count($subscribers) . " subscribers");
             
