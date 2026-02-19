@@ -427,37 +427,33 @@ class OpenClaw_FluentCRM_Module {
         $subscriber_count = 0;
         
         if (!empty($list_ids)) {
-            $subscribers_table = $wpdb->prefix . 'fc_subscribers';
-            $pivot_table = $wpdb->prefix . 'fc_subscriber_pivot';
             $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
             
-            $list_placeholders = implode(',', array_fill(0, count($list_ids), '%d'));
+            // Use raw query that mirrors the working list_subscribers function
+            // but adapted for multiple list IDs
+            $subscribers_table = $wpdb->prefix . 'fc_subscribers';
+            $pivot_table = $wpdb->prefix . 'fc_subscriber_pivot';
             
-            // Get subscribers from specified lists
-            // FluentCRM uses 'list' for object_type in pivot table
-            // Build IN clause with escaped values
-            $list_ids_escaped = array_map(function($id) use ($wpdb) { return (int)$id; }, $list_ids);
-            $list_ids_string = implode(',', $list_ids_escaped);
-            
-            // Build list ID conditions using OR (like list_subscribers does)
-            $list_conditions = [];
+            // Build OR conditions for multiple lists
+            $list_where_clauses = [];
             foreach ($list_ids as $lid) {
-                $list_conditions[] = "sl.object_id = " . (int)$lid;
+                $list_where_clauses[] = $wpdb->prepare("sl.object_id = %d", (int)$lid);
             }
-            $list_where = '(' . implode(' OR ', $list_conditions) . ')';
+            $list_where = implode(' OR ', $list_where_clauses);
             
             $sql = "SELECT DISTINCT s.id, s.email, s.first_name, s.last_name 
-                 FROM $subscribers_table s 
-                 JOIN $pivot_table sl ON s.id = sl.subscriber_id AND sl.object_type = 'list'
-                 WHERE $list_where";
+                 FROM {$subscribers_table} s 
+                 INNER JOIN {$pivot_table} sl ON s.id = sl.subscriber_id 
+                 WHERE sl.object_type = 'list' 
+                 AND ({$list_where})";
             
             $subscribers = $wpdb->get_results($sql);
-            error_log("OpenClaw API - SQL Query: " . $sql);
-            error_log("OpenClaw API - Found " . count($subscribers) . " subscribers");
+            error_log("OpenClaw API create_campaign SQL: " . $sql);
+            error_log("OpenClaw API create_campaign found subscribers: " . count($subscribers));
             
             // Create campaign email records
             foreach ($subscribers as $sub) {
-                $insert_result = $wpdb->insert($campaign_emails_table, [
+                $result = $wpdb->insert($campaign_emails_table, [
                     'campaign_id' => $campaign_id,
                     'subscriber_id' => $sub->id,
                     'email' => $sub->email,
@@ -467,14 +463,14 @@ class OpenClaw_FluentCRM_Module {
                     'created_at' => current_time('mysql'),
                     'updated_at' => current_time('mysql')
                 ]);
-                error_log("OpenClaw API - Insert result for {$sub->email}: " . ($insert_result !== false ? "success" : "failed: " . $wpdb->last_error));
-                if ($insert_result !== false) {
+                if ($result !== false) {
                     $subscriber_count++;
                 }
             }
             
             // Update recipients count
             $wpdb->update($table, ['recipients_count' => $subscriber_count], ['id' => $campaign_id]);
+            error_log("OpenClaw API create_campaign final subscriber count: " . $subscriber_count);
         }
         
         $campaign = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $campaign_id));
