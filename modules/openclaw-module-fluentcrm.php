@@ -431,6 +431,7 @@ class OpenClaw_FluentCRM_Module {
         // Create campaign emails for subscribers in target lists
         $list_ids = $data['list_ids'] ?? [];
         $subscriber_count = 0;
+        $debug_info = null;
         
         if (!empty($list_ids)) {
             $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
@@ -453,9 +454,13 @@ class OpenClaw_FluentCRM_Module {
             $subscribers = $wpdb->get_results($sql);
             
             // DEBUG: Log the query and results
-            error_log("OpenClaw API DEBUG: SQL = " . $sql);
-            error_log("OpenClaw API DEBUG: Subscribers found = " . count($subscribers));
-            error_log("OpenClaw API DEBUG: Last error = " . $wpdb->last_error);
+            $debug_info = [
+                'sql' => $sql,
+                'subscribers_found' => count($subscribers),
+                'last_error' => $wpdb->last_error,
+                'list_id' => $list_id
+            ];
+            error_log("OpenClaw API DEBUG: " . json_encode($debug_info));
             
             // Create campaign email records
             foreach ($subscribers as $sub) {
@@ -488,7 +493,8 @@ class OpenClaw_FluentCRM_Module {
             'subject' => $campaign->email_subject,
             'recipients_count' => (int)$campaign->recipients_count,
             'created_at' => $campaign->created_at,
-            'message' => 'Campaign created as draft. Use /crm/campaigns/{id}/send to send it.'
+            'message' => 'Campaign created as draft. Use /crm/campaigns/{id}/send to send it.',
+            '_debug' => $debug_info ?? null
         ], 201);
     }
 
