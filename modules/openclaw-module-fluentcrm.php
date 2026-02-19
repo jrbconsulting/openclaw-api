@@ -426,29 +426,20 @@ class OpenClaw_FluentCRM_Module {
         $list_ids = $data['list_ids'] ?? [];
         $subscriber_count = 0;
         
-        if (!empty($list_ids)) {
+        if (!empty($list_ids) && class_exists('FluentCRM\App\Models\Subscriber')) {
             $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
-            $subscribers_table = $wpdb->prefix . 'fc_subscribers';
-            $pivot_table = $wpdb->prefix . 'fc_subscriber_pivot';
             
-            // Build the query exactly like list_subscribers but with OR for multiple lists
-            $join = "JOIN $pivot_table sl ON s.id = sl.subscriber_id AND sl.object_type = 'list'";
+            // Use FluentCRM's Eloquent model to get subscribers by list
+            // This approach works in add_to_list, so it should work here too
+            $subscribers = \FluentCRM\App\Models\Subscriber::whereIn('id', function($query) use ($list_ids, $wpdb) {
+                $pivot_table = $wpdb->prefix . 'fc_subscriber_pivot';
+                $query->select('subscriber_id')
+                      ->from($pivot_table)
+                      ->where('object_type', 'list')
+                      ->whereIn('object_id', $list_ids);
+            })->get();
             
-            // Build WHERE clause for list IDs
-            $list_conditions = [];
-            foreach ($list_ids as $lid) {
-                $list_conditions[] = "sl.object_id = " . (int)$lid;
-            }
-            $where = 'WHERE ' . implode(' OR ', $list_conditions);
-            
-            $sql = "SELECT DISTINCT s.id, s.email, s.first_name, s.last_name 
-                 FROM $subscribers_table s 
-                 $join 
-                 $where";
-            
-            $subscribers = $wpdb->get_results($sql);
-            error_log("OpenClaw API campaign SQL: $sql");
-            error_log("OpenClaw API campaign found: " . count($subscribers) . " subscribers");
+            error_log("OpenClaw API campaign Eloquent query found: " . count($subscribers) . " subscribers");
             
             // Create campaign email records
             foreach ($subscribers as $sub) {
@@ -468,7 +459,7 @@ class OpenClaw_FluentCRM_Module {
             }
             
             $wpdb->update($table, ['recipients_count' => $subscriber_count], ['id' => $campaign_id]);
-            error_log("OpenClaw API campaign inserted: $subscriber_count emails");
+            error_log("OpenClaw API campaign final count: $subscriber_count");
         }
         
         $campaign = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $campaign_id));
