@@ -172,11 +172,11 @@ class OpenClaw_FluentCRM_Module {
         
         if ($list_id) {
             $join .= " JOIN $pivot_table sl ON s.id = sl.subscriber_id AND sl.object_type = 'list'";
-            $where .= $wpdb->prepare(' AND sl.object_id = %d', $list_id);
+            $where .= " AND sl.object_id = " . (int)$list_id;
         }
         if ($tag_id) {
             $join .= " JOIN $pivot_table st ON s.id = st.subscriber_id AND st.object_type = 'tag'";
-            $where .= $wpdb->prepare(' AND st.object_id = %d', $tag_id);
+            $where .= " AND st.object_id = " . (int)$tag_id;
         }
         if ($status) {
             $where .= $wpdb->prepare(' AND s.status = %s', $status);
@@ -434,19 +434,19 @@ class OpenClaw_FluentCRM_Module {
             $list_placeholders = implode(',', array_fill(0, count($list_ids), '%d'));
             
             // Get subscribers from specified lists
-            // FluentCRM uses full class name for object_type
-            $sql = $wpdb->prepare(
-                "SELECT DISTINCT s.id, s.email, s.first_name, s.last_name 
+            // FluentCRM uses 'list' for object_type in pivot table
+            // Build IN clause with escaped values
+            $list_ids_escaped = array_map(function($id) use ($wpdb) { return (int)$id; }, $list_ids);
+            $list_ids_string = implode(',', $list_ids_escaped);
+            
+            $sql = "SELECT DISTINCT s.id, s.email, s.first_name, s.last_name 
                  FROM $subscribers_table s 
                  INNER JOIN $pivot_table p ON s.id = p.subscriber_id 
-                 WHERE p.object_id IN ($list_placeholders) 
+                 WHERE p.object_id IN ($list_ids_string) 
                  AND p.object_type = 'list' 
-                 AND s.status = 'subscribed'",
-                ...$list_ids
-            );
-            error_log("OpenClaw API - Campaign Create SQL: " . $sql);
+                 AND s.status = 'subscribed'";
+            
             $subscribers = $wpdb->get_results($sql);
-            error_log("OpenClaw API - Found subscribers: " . count($subscribers));
             
             // Create campaign email records
             foreach ($subscribers as $sub) {
