@@ -324,8 +324,16 @@ class OpenClaw_FluentCRM_Module {
 
     public static function list_lists($request) {
         global $wpdb;
-        $table = $wpdb->prefix . 'fc_campaign_emails';
-        return new WP_REST_Response($wpdb->get_results("DESCRIBE $table"), 200);
+        $table = $wpdb->prefix . 'fc_lists';
+        
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+            return new WP_REST_Response(['error' => 'FluentCRM lists table not found', 'table' => $table], 500);
+        }
+        
+        $lists = $wpdb->get_results("SELECT * FROM $table ORDER BY id ASC");
+        
+        return new WP_REST_Response($lists, 200);
     }
 
     public static function list_tags($request) {
