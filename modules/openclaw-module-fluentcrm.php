@@ -425,6 +425,7 @@ class OpenClaw_FluentCRM_Module {
         // Create campaign emails for subscribers in target lists
         $list_ids = $data['list_ids'] ?? [];
         $subscriber_count = 0;
+        $debug_info = null;
         
         if (!empty($list_ids)) {
             $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
@@ -445,8 +446,6 @@ class OpenClaw_FluentCRM_Module {
                  FROM $subscribers_table s $join $where";
             
             $subscribers = $wpdb->get_results($sql);
-            error_log("OpenClaw API campaign SQL: $sql");
-            error_log("OpenClaw API campaign results: " . count($subscribers));
             
             // Create campaign email records
             $insert_errors = [];
@@ -467,13 +466,19 @@ class OpenClaw_FluentCRM_Module {
                     $insert_errors[] = $wpdb->last_error;
                 }
             }
-            if (!empty($insert_errors)) {
-                error_log("OpenClaw API insert errors: " . json_encode($insert_errors));
-            }
             
             // Update the CAMPAIGNS table (not subscribers table)
             $wpdb->update($wpdb->prefix . 'fc_campaigns', ['recipients_count' => $subscriber_count], ['id' => $campaign_id]);
-            error_log("OpenClaw API campaign final count: $subscriber_count");
+            
+            // DEBUG info to return in response
+            $debug_info = [
+                'sql' => $sql,
+                'subscribers_found' => count($subscribers),
+                'subscribers_inserted' => $subscriber_count,
+                'insert_errors' => $insert_errors,
+                'campaign_id' => $campaign_id,
+                'list_id' => $list_id
+            ];
         }
         
         $campaign = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $campaign_id));
@@ -485,7 +490,8 @@ class OpenClaw_FluentCRM_Module {
             'subject' => $campaign->email_subject,
             'recipients_count' => (int)$campaign->recipients_count,
             'created_at' => $campaign->created_at,
-            'message' => 'Campaign created as draft. Use /crm/campaigns/{id}/send to send it.'
+            'message' => 'Campaign created as draft. Use /crm/campaigns/{id}/send to send it.',
+            '_debug' => $debug_info
         ], 201);
     }
 
