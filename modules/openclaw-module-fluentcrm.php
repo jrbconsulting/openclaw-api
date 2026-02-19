@@ -455,9 +455,6 @@ class OpenClaw_FluentCRM_Module {
                 $result = $wpdb->insert($campaign_emails_table, [
                     'campaign_id' => $campaign_id,
                     'subscriber_id' => $sub->id,
-                    'email' => $sub->email,
-                    'first_name' => $sub->first_name,
-                    'last_name' => $sub->last_name,
                     'status' => 'pending',
                     'created_at' => current_time('mysql'),
                     'updated_at' => current_time('mysql')
