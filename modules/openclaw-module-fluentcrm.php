@@ -430,13 +430,14 @@ class OpenClaw_FluentCRM_Module {
             $campaign_emails_table = $wpdb->prefix . 'fc_campaign_emails';
             
             // Use FluentCRM's Eloquent model to get subscribers by list
-            // This approach works in add_to_list, so it should work here too
-            $subscribers = \FluentCRM\App\Models\Subscriber::whereIn('id', function($query) use ($list_ids, $wpdb) {
-                $pivot_table = $wpdb->prefix . 'fc_subscriber_pivot';
-                $query->select('subscriber_id')
-                      ->from($pivot_table)
-                      ->where('object_type', 'list')
-                      ->whereIn('object_id', $list_ids);
+            // Note: FluentCRM models handle table prefixes automatically
+            // Use raw whereExists instead of whereIn with closure to avoid double prefix
+            $subscribers = \FluentCRM\App\Models\Subscriber::whereExists(function($query) use ($list_ids) {
+                $query->selectRaw(1)
+                      ->from('fc_subscriber_pivot')
+                      ->whereColumn('fc_subscriber_pivot.subscriber_id', 'fc_subscribers.id')
+                      ->where('fc_subscriber_pivot.object_type', 'list')
+                      ->whereIn('fc_subscriber_pivot.object_id', $list_ids);
             })->get();
             
             error_log("OpenClaw API campaign Eloquent query found: " . count($subscribers) . " subscribers");
