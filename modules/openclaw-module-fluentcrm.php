@@ -227,8 +227,15 @@ class OpenClaw_FluentCRM_Module {
             'last_name' => $s->last_name,
             'full_name' => trim($s->first_name . ' ' . $s->last_name),
             'status' => $s->status,
-            'lists' => $s->lists->map(function($l) { return ['id' => $l->id, 'title' => $l->title]; }),
-            'tags' => $s->tags->map(function($t) { return ['id' => $t->id, 'title' => $t->title]; }),
+            'phone' => $s->phone ?? '',
+            'address_line_1' => $s->address_line_1 ?? '',
+            'address_line_2' => $s->address_line_2 ?? '',
+            'city' => $s->city ?? '',
+            'state' => $s->state ?? '',
+            'country' => $s->country ?? '',
+            'zip' => $s->zip ?? '',
+            'lists' => $s->lists ? $s->lists->map(function($l) { return ['id' => $l->id, 'title' => $l->title]; }) : [],
+            'tags' => $s->tags ? $s->tags->map(function($t) { return ['id' => $t->id, 'title' => $t->title]; }) : [],
             'created_at' => $s->created_at,
             'custom_values' => $s->custom_values ?? []
         ];
@@ -296,16 +303,30 @@ class OpenClaw_FluentCRM_Module {
             return new WP_REST_Response(['error' => 'Subscriber not found'], 404);
         }
 
+        $params = $request->get_json_params();
+
         // Whitelist allowed fields to prevent mass assignment
         $allowed_fields = ['first_name', 'last_name', 'email', 'status', 'phone', 'address_line_1', 
-                          'address_line_2', 'city', 'state', 'country', 'zip', 'date_of_birth', 'source'];
-        $data = array_intersect_key($request->get_json_params(), array_flip($allowed_fields));
+                          'address_line_2', 'city', 'state', 'country', 'zip', 'date_of_birth', 'source', 'custom_values'];
+        $data = array_intersect_key($params, array_flip($allowed_fields));
         
-        if (empty($data)) {
+        if (empty($data) && empty($params['lists']) && empty($params['tags'])) {
             return new WP_REST_Response(['error' => 'No valid fields to update'], 400);
         }
         
-        $subscriber->fill($data)->save();
+        if (!empty($data)) {
+            $subscriber->fill($data)->save();
+        }
+
+        // Handle Lists
+        if (isset($params['lists'])) {
+            $subscriber->lists()->sync((array)$params['lists']);
+        }
+
+        // Handle Tags
+        if (isset($params['tags'])) {
+            $subscriber->tags()->sync((array)$params['tags']);
+        }
 
         return new WP_REST_Response(self::format_subscriber($subscriber->fresh(['lists', 'tags'])), 200);
     }
