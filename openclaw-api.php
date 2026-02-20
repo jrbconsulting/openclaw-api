@@ -2,7 +2,7 @@
 /**
  * Plugin Name: OpenClaw API
  * Description: WordPress REST API for OpenClaw remote site management
- * Version: 2.6.50
+ * Version: 2.6.51
  * Author: OpenClaw
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('OPENCLAW_API_VERSION', '2.6.50');
+define('OPENCLAW_API_VERSION', '2.6.51');
 define('OPENCLAW_API_GITHUB_REPO', 'openclaw/openclaw-api');
 
 // GitHub Updater Integration
@@ -221,6 +221,11 @@ function openclaw_self_update_from_url($request) {
     
     // Get new version from updated plugin
     $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/openclaw-api/openclaw-api.php');
+    
+    // Clear OpCache if available
+    if (function_exists('opcache_reset')) {
+        @opcache_reset();
+    }
     
     return new WP_REST_Response([
         'status' => 'updated',
