@@ -2,8 +2,8 @@
 Contributors: jrbconsulting
 Tags: api, remote, openclaw
 Requires at least: 5.6
-Tested up to: 6.4
-Stable tag: 2.7.2
+Tested up to: 6.7
+Stable tag: 2.7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,12 @@ Extend WordPress REST API to support remote site management, plugin updates, and
 
 == Changelog ==
 
+= 2.7.3 =
+* Final compliance push for WordPress.org directory.
+* Removed Update URI header (not allowed for dot org hosted plugins).
+* Restored Text Domain to 'openclaw-api' to match submission slug.
+* Updated 'Tested up to' to 6.7.
+
 = 2.7.2 =
 * Fix license declaration order in readme.txt for WordPress.org compliance.
 
@@ -28,14 +34,3 @@ Extend WordPress REST API to support remote site management, plugin updates, and
 * Compliance rebranding: Renamed to JRB Remote Site API for OpenClaw.
 * Added SKILL.md for agentic reference.
 * Updated text domain and slug normalization.
-
-= 2.7.0 =
-* Added support for programmatic Fluent Forms creation.
-* Updated API capabilities for remote form management.
-* Version normalization across all headers.
-
-= 2.6.51 =
-* Maintenance update.
-
-= 2.6.43 =
-* Fix FluentCRM recipient sync.
