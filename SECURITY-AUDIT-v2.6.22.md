@@ -28,7 +28,7 @@ The previously reported SQL injection vulnerability (`LIKE '%Lists'` pattern) ha
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `openclaw-api.php` | ~2925 | Main plugin file |
+| `jrb-remote-site-api-openclaw.php` | ~2925 | Main plugin file |
 | `modules/openclaw-module-fluentcrm.php` | ~620 | FluentCRM integration |
 | `modules/openclaw-module-fluentforms.php` | ~350 | FluentForms integration |
 | `modules/openclaw-module-fluentsupport.php` | ~580 | FluentSupport integration |
@@ -359,7 +359,7 @@ error_log(sprintf('[OpenClaw API] Theme switched: OldTheme=%s, NewTheme=%s', ...
 // Self-update validates ZIP contents before applying
 $zip = new ZipArchive();
 for ($i = 0; $i < $zip->numFiles; $i++) {
-    if (strpos($filename, 'openclaw-api.php') !== false) {
+    if (strpos($filename, 'jrb-remote-site-api-openclaw.php') !== false) {
         $content = $zip->getFromIndex($i);
         if (strpos($content, 'Plugin Name: OpenClaw API') !== false) {
             $valid_plugin = true;  // Only accept valid plugin

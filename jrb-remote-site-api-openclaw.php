@@ -7,7 +7,7 @@
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: jrb-remote-site-api-openclaw
- * Update URI: https://github.com/JRBConsulting/openclaw-api
+ * Update URI: https://github.com/JRBConsulting/jrb-remote-site-api-openclaw
  */
 
 if (!defined('ABSPATH')) {
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('OPENCLAW_API_VERSION', '2.7.1');
-define('OPENCLAW_API_GITHUB_REPO', 'JRBConsulting/openclaw-api');
+define('OPENCLAW_API_GITHUB_REPO', 'JRBConsulting/jrb-remote-site-api-openclaw');
 
 // GitHub Updater Integration
 add_filter('update_plugins_github.com', function($update, $plugin_data, $plugin_file) {
@@ -23,7 +23,7 @@ add_filter('update_plugins_github.com', function($update, $plugin_data, $plugin_
         return $update;
     }
     
-    $github_repo = 'JRBConsulting/openclaw-api';
+    $github_repo = 'JRBConsulting/jrb-remote-site-api-openclaw';
     $response = wp_remote_get("https://api.github.com/repos/{$github_repo}/releases/latest", [
         'headers' => ['User-Agent' => 'WordPress JRB Remote API Plugin'],
         'timeout' => 10,
@@ -178,11 +178,11 @@ function openclaw_self_update_from_url($request) {
         ], 400);
     }
     
-    // Validate ZIP contains openclaw-api.php with correct plugin header
+    // Validate ZIP contains jrb-remote-site-api-openclaw.php with correct plugin header
     $valid_plugin = false;
     for ($i = 0; $i < $zip->numFiles; $i++) {
         $filename = $zip->getNameIndex($i);
-        if (strpos($filename, 'openclaw-api.php') !== false) {
+        if (strpos($filename, 'jrb-remote-site-api-openclaw.php') !== false) {
             $content = $zip->getFromIndex($i);
             if (strpos($content, 'Plugin Name: JRB Remote Site API for OpenClaw') !== false) {
                 $valid_plugin = true;
@@ -2600,7 +2600,7 @@ function openclaw_api_admin_page() {
         $plugin_file = 'jrb-remote-site-api-openclaw/jrb-remote-site-api-openclaw.php';
         
         // Get latest release
-        $response = wp_remote_get('https://api.github.com/repos/JRBConsulting/openclaw-api/releases/latest', [
+        $response = wp_remote_get('https://api.github.com/repos/JRBConsulting/jrb-remote-site-api-openclaw/releases/latest', [
             'headers' => ['User-Agent' => 'JRB Remote API Plugin'],
             'timeout' => 10,
         ]);
@@ -2843,7 +2843,7 @@ function openclaw_api_admin_page() {
         $update_available = false;
         $latest_version = $current_version;
         
-        $response = wp_remote_get('https://api.github.com/repos/JRBConsulting/openclaw-api/releases/latest', [
+        $response = wp_remote_get('https://api.github.com/repos/JRBConsulting/jrb-remote-site-api-openclaw/releases/latest', [
             'headers' => ['User-Agent' => 'JRB Remote API Plugin'],
             'timeout' => 5,
         ]);

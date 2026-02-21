@@ -113,7 +113,7 @@ All security best practices implemented:
 ## Files Changed in v2.2.0
 
 ```
-openclaw-api.php                          (token storage, version disclosure)
+jrb-remote-site-api-openclaw.php                          (token storage, version disclosure)
 modules/openclaw-module-auth.php          (NEW - auth helper class)
 modules/openclaw-modules.php              (load auth first)
 modules/openclaw-module-fluentcommunity.php (SQL fix)

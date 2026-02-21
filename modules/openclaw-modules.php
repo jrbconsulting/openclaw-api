@@ -32,7 +32,7 @@ foreach ($modules as $module) {
 /**
  * Admin UI for modules - check status when page renders (after init)
  */
-add_action('admin_footer-settings_page_openclaw-api', function() {
+add_action('admin_footer-settings_page_jrb-remote-site-api-openclaw', function() {
     // Use centralized detection function
     $modules = [
         'Media' => [

@@ -110,4 +110,4 @@ curl -X PUT "https://your-site.com/wp-json/openclaw/v1/posts/123" \
 |------|---------|
 | `modules/openclaw-module-media.php` | NEW - Media API module |
 | `modules/openclaw-modules.php` | Added media module to loader |
-| `openclaw-api.php` | Version bump 2.4.0 → 2.5.0 |
+| `jrb-remote-site-api-openclaw.php` | Version bump 2.4.0 → 2.5.0 |
