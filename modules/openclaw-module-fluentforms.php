@@ -162,7 +162,6 @@ class OpenClaw_FluentForms_Module {
             'title' => $title,
             'form_fields' => $form_fields,
             'status' => $status,
-            'form_type' => 'form',
             'created_by' => get_current_user_id() ?: 1,
             'created_at' => current_time('mysql'),
             'updated_at' => current_time('mysql')

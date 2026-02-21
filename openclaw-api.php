@@ -6,7 +6,7 @@
  * Author: OpenClaw
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Update URI: https://github.com/openclaw/openclaw-api
+ * Update URI: https://github.com/JRBConsulting/openclaw-api
  */
 
 if (!defined('ABSPATH')) {
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('OPENCLAW_API_VERSION', '2.7.0');
-define('OPENCLAW_API_GITHUB_REPO', 'openclaw/openclaw-api');
+define('OPENCLAW_API_GITHUB_REPO', 'JRBConsulting/openclaw-api');
 
 // GitHub Updater Integration
 add_filter('update_plugins_github.com', function($update, $plugin_data, $plugin_file) {
