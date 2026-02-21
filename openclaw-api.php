@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('OPENCLAW_API_VERSION', '2.6.51');
+define('OPENCLAW_API_VERSION', '2.7.0');
 define('OPENCLAW_API_GITHUB_REPO', 'openclaw/openclaw-api');
 
 // GitHub Updater Integration
