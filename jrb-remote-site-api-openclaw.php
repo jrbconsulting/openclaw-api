@@ -314,24 +314,8 @@ add_action('rest_api_init', function() {
         'permission_callback' => function() { return openclaw_verify_token_and_can('tags_delete'); },
     ]);
     
-    // Media
-    register_rest_route('openclaw/v1', '/media', [
-        'methods' => 'GET',
-        'callback' => 'openclaw_get_media',
-        'permission_callback' => function() { return openclaw_verify_token_and_can('media_read'); },
-    ]);
-    
-    register_rest_route('openclaw/v1', '/media', [
-        'methods' => 'POST',
-        'callback' => 'openclaw_upload_media',
-        'permission_callback' => function() { return openclaw_verify_token_and_can('media_upload'); },
-    ]);
-    
-    register_rest_route('openclaw/v1', '/media/(?P<id>\d+)', [
-        'methods' => 'DELETE',
-        'callback' => 'openclaw_delete_media',
-        'permission_callback' => function() { return openclaw_verify_token_and_can('media_delete'); },
-    ]);
+    // Media routes removed - module-media.php registers all media endpoints
+    // See: modules/module-media.php for complete media API implementation
     
     // Pages
     register_rest_route('openclaw/v1', '/pages', [
@@ -1702,20 +1686,9 @@ function openclaw_resolve_tags($tags) {
 
 // Media
 // Defer to the module for all media operations
-// The module loads after this file and will override the routes
-
-// This is a placeholder - the actual implementation is in openclaw-module-media.php
-function openclaw_get_media($request) {
-    return new WP_Error('media_module_missing', 'Media management module not installed', ['status' => 500]);
-}
-
-function openclaw_upload_media($request) {
-    return new WP_Error('media_module_missing', 'Media management module not installed', ['status' => 500]);
-}
-
-function openclaw_delete_media($request) {
-    return new WP_Error('media_module_missing', 'Media management module not installed', ['status' => 500]);
-}
+// The module loads after this file and registers its own routes via rest_api_init
+// Placeholder functions removed - module-media.php handles all media operations
+// See: modules/module-media.php for implementation
 
 // Pages
 function openclaw_get_pages() {
