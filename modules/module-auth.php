@@ -5,7 +5,7 @@
  * Provides permission callbacks for modules that use the OpenClaw_Fluent_Auth pattern.
  * Also handles dynamic capability registration for the Fluent Suite.
  * 
- * @deprecated 2.3.6 Use openclaw_verify_token_and_can() directly for granular permissions
+ * @deprecated 2.3.6 Use jrb_verify_token_and_can() directly for granular permissions
  */
 
 if (!defined('ABSPATH')) exit;
@@ -15,44 +15,44 @@ if (!defined('ABSPATH')) exit;
  * 
  * @deprecated 2.3.6 Direct capability checks are now used in routes.
  *             This class is maintained for backward compatibility only.
- *             Use openclaw_verify_token_and_can('capability_name') directly.
+ *             Use jrb_verify_token_and_can('capability_name') directly.
  */
-class OpenClaw_Fluent_Auth {
+class JRB_Fluent_Auth {
     
     /**
      * Check read permission (legacy)
-     * @deprecated 2.3.6 Use openclaw_verify_token_and_can('specific_capability') instead
+     * @deprecated 2.3.6 Use jrb_verify_token_and_can('specific_capability') instead
      */
     public static function check_read() {
-        _deprecated_function(__METHOD__, '2.3.6', 'openclaw_verify_token_and_can()');
-        return openclaw_verify_token_and_can('fluent_read');
+        _deprecated_function(__METHOD__, '2.3.6', 'jrb_verify_token_and_can()');
+        return jrb_verify_token_and_can('fluent_read');
     }
     
     /**
      * Check write permission (legacy)
-     * @deprecated 2.3.6 Use openclaw_verify_token_and_can('specific_capability') instead
+     * @deprecated 2.3.6 Use jrb_verify_token_and_can('specific_capability') instead
      */
     public static function check_write() {
-        _deprecated_function(__METHOD__, '2.3.6', 'openclaw_verify_token_and_can()');
-        return openclaw_verify_token_and_can('fluent_write');
+        _deprecated_function(__METHOD__, '2.3.6', 'jrb_verify_token_and_can()');
+        return jrb_verify_token_and_can('fluent_write');
     }
     
     /**
      * Check manage permission (legacy)
-     * @deprecated 2.3.6 Use openclaw_verify_token_and_can('specific_capability') instead
+     * @deprecated 2.3.6 Use jrb_verify_token_and_can('specific_capability') instead
      */
     public static function check_manage() {
-        _deprecated_function(__METHOD__, '2.3.6', 'openclaw_verify_token_and_can()');
-        return openclaw_verify_token_and_can('fluent_manage');
+        _deprecated_function(__METHOD__, '2.3.6', 'jrb_verify_token_and_can()');
+        return jrb_verify_token_and_can('fluent_manage');
     }
     
     /**
      * Check admin permission (legacy)
-     * @deprecated 2.3.6 Use openclaw_verify_token_and_can('specific_capability') instead
+     * @deprecated 2.3.6 Use jrb_verify_token_and_can('specific_capability') instead
      */
     public static function check_admin() {
-        _deprecated_function(__METHOD__, '2.3.6', 'openclaw_verify_token_and_can()');
-        return openclaw_verify_token_and_can('fluent_admin');
+        _deprecated_function(__METHOD__, '2.3.6', 'jrb_verify_token_and_can()');
+        return jrb_verify_token_and_can('fluent_admin');
     }
     
     /**
@@ -63,7 +63,7 @@ class OpenClaw_Fluent_Auth {
      * @return bool
      */
     public static function check_capability($capability) {
-        return openclaw_verify_token_and_can($capability);
+        return jrb_verify_token_and_can($capability);
     }
 }
 
@@ -74,7 +74,7 @@ class OpenClaw_Fluent_Auth {
  * 
  * @return array Array of [capability => ['label' => string, 'default' => bool, 'group' => string]]
  */
-function openclaw_get_module_capabilities() {
+function jrb_get_module_capabilities() {
     return apply_filters('openclaw_module_capabilities', []);
 }
 

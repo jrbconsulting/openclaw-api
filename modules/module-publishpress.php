@@ -8,7 +8,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-class OpenClaw_PublishPress_Statuses {
+class JRB_PublishPress_Statuses {
 
     private static $active = false;
 
@@ -133,7 +133,7 @@ class OpenClaw_PublishPress_Statuses {
         register_rest_route('openclaw/v1', '/statuses', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_all_statuses'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('statuses_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('statuses_read'); },
         ]);
     }
 

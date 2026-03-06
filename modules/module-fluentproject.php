@@ -8,7 +8,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-class OpenClaw_FluentProject_Module {
+class JRB_FluentProject_Module {
 
     private static $active = false;
     private static $project_type = 'fproject';
@@ -53,77 +53,77 @@ class OpenClaw_FluentProject_Module {
         register_rest_route('openclaw/v1', '/project/projects', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_projects'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_read'); }
         ]);
         register_rest_route('openclaw/v1', '/project/projects', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_project'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_create'); }
         ]);
         register_rest_route('openclaw/v1', '/project/projects/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_project'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_read'); }
         ]);
         register_rest_route('openclaw/v1', '/project/projects/(?P<id>\d+)', [
             'methods' => 'PUT',
             'callback' => [__CLASS__, 'update_project'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_create'); }
         ]);
 
         // Tasks
         register_rest_route('openclaw/v1', '/project/tasks', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_tasks'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_read'); }
         ]);
         register_rest_route('openclaw/v1', '/project/tasks', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_task'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_create'); }
         ]);
         register_rest_route('openclaw/v1', '/project/tasks/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_task'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_read'); }
         ]);
         register_rest_route('openclaw/v1', '/project/tasks/(?P<id>\d+)', [
             'methods' => 'PUT',
             'callback' => [__CLASS__, 'update_task'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_create'); }
         ]);
         register_rest_route('openclaw/v1', '/project/tasks/(?P<id>\d+)', [
             'methods' => 'DELETE',
             'callback' => [__CLASS__, 'delete_task'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_delete'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_delete'); }
         ]);
 
         // Boards
         register_rest_route('openclaw/v1', '/project/boards', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_boards'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_read'); }
         ]);
 
         // Comments
         register_rest_route('openclaw/v1', '/project/comments', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_comment'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_create'); }
         ]);
 
         // Assignments
         register_rest_route('openclaw/v1', '/project/assign', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'assign_task'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_boards_manage'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_boards_manage'); }
         ]);
 
         // Stats
         register_rest_route('openclaw/v1', '/project/stats', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_stats'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('project_tasks_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('project_tasks_read'); }
         ]);
     }
 

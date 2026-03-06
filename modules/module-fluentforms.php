@@ -8,7 +8,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-class OpenClaw_FluentForms_Module {
+class JRB_FluentForms_Module {
 
     private static $active = false;
 
@@ -50,58 +50,58 @@ class OpenClaw_FluentForms_Module {
         register_rest_route('openclaw/v1', '/forms', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_forms'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_read'); },
         ]);
         register_rest_route('openclaw/v1', '/forms', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_form'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_create'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_create'); },
         ]);
         register_rest_route('openclaw/v1', '/forms/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_form'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_read'); },
         ]);
         register_rest_route('openclaw/v1', '/forms/(?P<id>\d+)', [
             'methods' => 'PUT',
             'callback' => [__CLASS__, 'update_form'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_update'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_update'); },
         ]);
 
         // Entries
         register_rest_route('openclaw/v1', '/forms/(?P<id>\d+)/entries', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_entries'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_read'); },
         ]);
         register_rest_route('openclaw/v1', '/forms/(?P<id>\d+)/entries', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'submit_entry'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_submit'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_submit'); },
         ]);
         register_rest_route('openclaw/v1', '/entries/(?P<entry_id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_entry'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_read'); },
         ]);
         register_rest_route('openclaw/v1', '/entries/(?P<entry_id>\d+)', [
             'methods' => 'DELETE',
             'callback' => [__CLASS__, 'delete_entry'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_entries_delete'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_entries_delete'); },
         ]);
 
         // Export
         register_rest_route('openclaw/v1', '/forms/(?P<id>\d+)/export', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'export_entries'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_read'); },
         ]);
 
         // Stats
         register_rest_route('openclaw/v1', '/forms/stats', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_stats'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('forms_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('forms_read'); },
         ]);
     }
 

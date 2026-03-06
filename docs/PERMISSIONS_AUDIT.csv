@@ -1,0 +1,67 @@
+Module,Endpoint,Method,Capability,Capability_Registered,Default_Value,Status,Issue_Severity,Notes
+FluentCRM,/crm/subscribers,GET,crm_subscribers_read,YES,true,✅ PASS,,Correct
+FluentCRM,/crm/subscribers,POST,crm_subscribers_create,YES,false,✅ PASS,,Correct
+FluentCRM,/crm/subscribers/{id},GET,crm_subscribers_read,YES,true,✅ PASS,,Correct
+FluentCRM,/crm/subscribers/{id},PUT,crm_subscribers_update,YES,false,✅ PASS,,Correct
+FluentCRM,/crm/subscribers/{id},DELETE,crm_subscribers_delete,YES,false,✅ PASS,,Correct
+FluentCRM,/crm/lists,GET,crm_lists_read,YES,true,✅ PASS,,Correct
+FluentCRM,/crm/tags,GET,crm_tags_read,YES,true,✅ PASS,,Correct
+FluentCRM,/crm/campaigns,GET,crm_campaigns_read,YES,true,✅ PASS,,Correct
+FluentCRM,/crm/campaigns,POST,crm_campaigns_create,YES,false,✅ PASS,,Correct
+FluentCRM,/crm/campaigns/{id},GET,crm_campaigns_read,YES,true,✅ PASS,,Correct
+FluentCRM,/crm/campaigns/{id},PUT,crm_campaigns_create,YES,false,⚠️ LOW,Uses create instead of update capability
+FluentCRM,/crm/campaigns/{id}/send,POST,crm_campaigns_send,YES,false,✅ PASS,,Correct
+FluentCRM,/crm/sequences,GET,crm_campaigns_read,YES,true,✅ PASS,,Acceptable
+FluentCRM,/crm/subscribers/{id}/add-list,POST,crm_lists_manage,YES,false,✅ PASS,,Correct
+FluentCRM,/crm/subscribers/{id}/add-tag,POST,crm_tags_manage,YES,false,✅ PASS,,Correct
+FluentCRM,/crm/stats,GET,crm_reports_read,YES,true,✅ PASS,,Correct
+FluentSupport,/support/tickets,GET,support_tickets_read,YES,true,✅ PASS,,Correct
+FluentSupport,/support/tickets,POST,support_tickets_create,YES,false,✅ PASS,,Correct
+FluentSupport,/support/tickets/{id},GET,support_tickets_read,YES,true,✅ PASS,,Correct
+FluentSupport,/support/tickets/{id},PUT,support_tickets_create,YES,false,⚠️ LOW,Uses create instead of update capability
+FluentSupport,/support/respond,POST,support_responses_create,YES,false,✅ PASS,,Correct
+FluentSupport,/support/customers,GET,support_customers_read,YES,true,✅ PASS,,Correct
+FluentSupport,/support/customers/{id},GET,support_customers_read,YES,true,✅ PASS,,Correct
+FluentSupport,/support/assign,POST,support_tickets_assign,YES,false,✅ PASS,,Correct
+FluentSupport,/support/stats,GET,support_tickets_read,YES,true,✅ PASS,,Correct
+FluentSupport,/support/search,GET,support_tickets_read,YES,true,✅ PASS,,Correct
+FluentSupport,/support/sync-forms,POST,support_sync,YES,false,✅ PASS,,Correct
+FluentForms,/forms,GET,forms_read,YES,true,✅ PASS,,Correct
+FluentForms,/forms,POST,forms_create,YES,false,✅ PASS,,Correct
+FluentForms,/forms/{id},GET,forms_read,YES,true,✅ PASS,,Correct
+FluentForms,/forms/{id},PUT,forms_update,YES,false,✅ PASS,,Correct
+FluentForms,/forms/{id}/entries,GET,forms_read,YES,true,✅ PASS,,Correct
+FluentForms,/forms/{id}/entries,POST,forms_submit,YES,true,✅ PASS,,Correct
+FluentForms,/entries/{entry_id},GET,forms_read,YES,true,✅ PASS,,Correct
+FluentForms,/entries/{entry_id},DELETE,forms_entries_delete,YES,false,✅ PASS,,Correct
+FluentForms,/forms/{id}/export,GET,forms_read,YES,true,✅ PASS,,Correct
+FluentForms,/forms/stats,GET,forms_read,YES,true,✅ PASS,,Correct
+FluentProject,/project/projects,GET,project_tasks_read,YES,true,✅ PASS,,Acceptable
+FluentProject,/project/projects,POST,project_tasks_create,YES,false,✅ PASS,,Correct
+FluentProject,/project/projects/{id},GET,project_tasks_read,YES,true,✅ PASS,,Acceptable
+FluentProject,/project/projects/{id},PUT,project_tasks_create,YES,false,⚠️ LOW,Uses create instead of update capability
+FluentProject,/project/tasks,GET,project_tasks_read,YES,true,✅ PASS,,Correct
+FluentProject,/project/tasks,POST,project_tasks_create,YES,false,✅ PASS,,Correct
+FluentProject,/project/tasks/{id},GET,project_tasks_read,YES,true,✅ PASS,,Correct
+FluentProject,/project/tasks/{id},PUT,project_tasks_create,YES,false,⚠️ LOW,Uses create instead of update capability
+FluentProject,/project/tasks/{id},DELETE,project_tasks_delete,YES,false,✅ PASS,,Correct
+FluentProject,/project/boards,GET,project_tasks_read,YES,true,✅ PASS,,Acceptable
+FluentProject,/project/comments,POST,project_tasks_create,YES,false,⚠️ LOW,Uses create instead of comments_create
+FluentProject,/project/assign,POST,project_boards_manage,YES,false,✅ PASS,,Correct (project_assign unused)
+FluentProject,/project/stats,GET,project_tasks_read,YES,true,✅ PASS,,Correct
+Media,/media,GET,media_read,YES,true,✅ PASS,,Correct
+Media,/media,POST,media_upload,YES,false,✅ PASS,,Correct + CSRF protection
+Media,/media/{id},GET,media_read,YES,true,✅ PASS,,Correct
+Media,/media/{id},PUT,media_edit,YES,false,✅ PASS,,Correct
+Media,/media/{id},DELETE,media_delete,YES,false,✅ PASS,,Correct
+FluentCommunity,/community/posts,GET,community_posts_read,YES,true,✅ PASS,,Correct
+FluentCommunity,/community/posts/{id},GET,community_posts_read,YES,true,✅ PASS,,Correct
+FluentCommunity,/community/posts,POST,community_posts_create,YES,false,✅ PASS,,Correct
+FluentCommunity,/community/posts/{id},PUT,community_posts_update,YES,false,✅ PASS,,Correct
+FluentCommunity,/community/posts/{id},DELETE,community_posts_delete,YES,false,✅ PASS,,Correct
+FluentCommunity,/community/groups,GET,community_groups_read,YES,true,✅ PASS,,Correct
+FluentCommunity,/community/groups/{id},GET,community_groups_read,YES,true,✅ PASS,,Correct
+FluentCommunity,/community/members,GET,community_members_read,YES,true,✅ PASS,,Correct
+PublishPress,/statuses,GET,statuses_read,YES,true,✅ PASS,,Correct
+Diagnostics,/diagnostics/health,GET,openclaw_api_verify_token,N/A,N/A,✅ PASS,,Token-only (appropriate)
+Diagnostics,/diagnostics/server,GET,openclaw_api_verify_token,N/A,N/A,✅ PASS,,Token-only (appropriate)

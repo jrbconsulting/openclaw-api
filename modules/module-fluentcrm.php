@@ -8,7 +8,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-class OpenClaw_FluentCRM_Module {
+class JRB_FluentCRM_Module {
 
     private static $active = false;
 
@@ -63,92 +63,92 @@ class OpenClaw_FluentCRM_Module {
         register_rest_route('openclaw/v1', '/crm/subscribers', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_subscribers'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_subscribers_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_subscribers_read'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/subscribers', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_subscriber'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_subscribers_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_subscribers_create'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/subscribers/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_subscriber'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_subscribers_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_subscribers_read'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/subscribers/(?P<id>\d+)', [
             'methods' => 'PUT',
             'callback' => [__CLASS__, 'update_subscriber'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_subscribers_update'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_subscribers_update'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/subscribers/(?P<id>\d+)', [
             'methods' => 'DELETE',
             'callback' => [__CLASS__, 'delete_subscriber'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_subscribers_delete'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_subscribers_delete'); }
         ]);
 
         // Lists & Tags
         register_rest_route('openclaw/v1', '/crm/lists', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_lists'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_lists_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_lists_read'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/tags', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_tags'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_tags_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_tags_read'); }
         ]);
 
         // Campaigns
         register_rest_route('openclaw/v1', '/crm/campaigns', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_campaigns'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_campaigns_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_campaigns_read'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/campaigns', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_campaign'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_campaigns_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_campaigns_create'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/campaigns/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_campaign'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_campaigns_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_campaigns_read'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/campaigns/(?P<id>\d+)', [
             'methods' => 'PUT',
             'callback' => [__CLASS__, 'update_campaign'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_campaigns_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_campaigns_create'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/campaigns/(?P<id>\d+)/send', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'send_campaign'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_campaigns_send'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_campaigns_send'); }
         ]);
 
         // Sequences
         register_rest_route('openclaw/v1', '/crm/sequences', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_sequences'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_campaigns_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_campaigns_read'); }
         ]);
 
         // Add to list/tag
         register_rest_route('openclaw/v1', '/crm/subscribers/(?P<id>\d+)/add-list', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'add_to_list'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_lists_manage'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_lists_manage'); }
         ]);
         register_rest_route('openclaw/v1', '/crm/subscribers/(?P<id>\d+)/add-tag', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'add_tag'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_tags_manage'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_tags_manage'); }
         ]);
 
         // Stats
         register_rest_route('openclaw/v1', '/crm/stats', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_stats'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('crm_reports_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('crm_reports_read'); }
         ]);
     }
 

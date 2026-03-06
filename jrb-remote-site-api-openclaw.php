@@ -2,7 +2,7 @@
 /**
  * Plugin Name: JRB Remote Site API for OpenClaw
  * Description: WordPress REST API for OpenClaw remote site management
- * Version: 6.4.1
+ * Version: 6.5.1
  * Author: JRB Consulting
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('OPENCLAW_API_VERSION', '6.4.1');
+define('OPENCLAW_API_VERSION', '6.5.0');
 define('OPENCLAW_API_GITHUB_REPO', 'JRBConsulting/jrb-remote-site-api-openclaw');
 
 // GitHub Updater Integration
@@ -68,15 +68,15 @@ add_filter('update_plugins_github.com', function($update, $plugin_data, $plugin_
 
 // Self-update API endpoint
 add_action('rest_api_init', function() {
-    // register_rest_route("openclaw/v1", "/self-update"', [
-    register_rest_route("openclaw/v1", "/self-update", [
+    // jrb_register_rest_route("jrb/v1", "/self-update"', [
+    jrb_register_rest_route("jrb/v1", "/self-update", [
         'callback' => 'openclaw_self_update',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_update'); },
     ]);
     
     // Direct update from URL (allows external push)
-    // register_rest_route("openclaw/v1", "/self-update"-from-url', [
-    register_rest_route("openclaw/v1", "/self-update-from-url", [
+    // jrb_register_rest_route("jrb/v1", "/self-update"-from-url', [
+    jrb_register_rest_route("jrb/v1", "/self-update-from-url", [
         'callback' => 'openclaw_self_update_from_url',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_update'); },
     ]);
@@ -235,80 +235,95 @@ function openclaw_self_update_from_url($request) {
     ], 200);
 }
 
+/**
+ * Register REST route for BOTH openclaw/v1 and jrb/v1 namespaces
+ * Ensures backward compatibility during transition period
+ */
+function jrb_register_rest_route($namespace, $route, $args) {
+    // Register for requested namespace
+    register_rest_route($namespace, $route, $args);
+    
+    // Also register for alternate namespace if different
+    $alternate = ($namespace === 'openclaw/v1') ? 'jrb/v1' : 'openclaw/v1';
+    if ($alternate !== $namespace) {
+        register_rest_route($alternate, $route, $args);
+    }
+}
+
 add_action('rest_api_init', function() {
     
-    // Health check (no auth)
-    register_rest_route('openclaw/v1', '/ping', [
+    // Health check (requires valid token)
+    jrb_register_rest_route('jrb/v1', '/ping', [
         'methods' => 'GET',
         'callback' => 'openclaw_ping',
-        'permission_callback' => '__return_true',
+        'permission_callback' => function() { return openclaw_verify_token(); },
     ]);
     
     // Site info
-    register_rest_route('openclaw/v1', '/site', [
+    jrb_register_rest_route('jrb/v1', '/site', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_site',
         'permission_callback' => function() { return openclaw_verify_token_and_can('site_info'); },
     ]);
     
     // Posts
-    register_rest_route('openclaw/v1', '/posts', [
+    jrb_register_rest_route('jrb/v1', '/posts', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_posts',
         'permission_callback' => function() { return openclaw_verify_token_and_can('posts_read'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/posts', [
+    jrb_register_rest_route('jrb/v1', '/posts', [
         'methods' => 'POST',
         'callback' => 'openclaw_create_post',
         'permission_callback' => function() { return openclaw_verify_token_and_can('posts_create'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/posts/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/posts/(?P<id>\d+)', [
         'methods' => 'PUT',
         'callback' => 'openclaw_update_post',
         'permission_callback' => function() { return openclaw_verify_token_and_can('posts_update'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/posts/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/posts/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_delete_post',
         'permission_callback' => function() { return openclaw_verify_token_and_can('posts_delete'); },
     ]);
     
     // Categories
-    register_rest_route('openclaw/v1', '/categories', [
+    jrb_register_rest_route('jrb/v1', '/categories', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_categories',
         'permission_callback' => function() { return openclaw_verify_token_and_can('categories_read'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/categories', [
+    jrb_register_rest_route('jrb/v1', '/categories', [
         'methods' => 'POST',
         'callback' => 'openclaw_create_category',
         'permission_callback' => function() { return openclaw_verify_token_and_can('categories_create'); },
     ]);
     
     // Tags
-    register_rest_route('openclaw/v1', '/tags', [
+    jrb_register_rest_route('jrb/v1', '/tags', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_tags',
         'permission_callback' => function() { return openclaw_verify_token_and_can('tags_read'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/tags', [
+    jrb_register_rest_route('jrb/v1', '/tags', [
         'methods' => 'POST',
         'callback' => 'openclaw_create_tag',
         'permission_callback' => function() { return openclaw_verify_token_and_can('tags_create'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/tags/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/tags/(?P<id>\d+)', [
         'methods' => 'PUT',
         'callback' => 'openclaw_update_tag',
         'permission_callback' => function() { return openclaw_verify_token_and_can('tags_update'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/tags/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/tags/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_delete_tag',
         'permission_callback' => function() { return openclaw_verify_token_and_can('tags_delete'); },
@@ -318,105 +333,82 @@ add_action('rest_api_init', function() {
     // See: modules/module-media.php for complete media API implementation
     
     // Pages
-    register_rest_route('openclaw/v1', '/pages', [
+    jrb_register_rest_route('jrb/v1', '/pages', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_pages',
         'permission_callback' => function() { return openclaw_verify_token_and_can('pages_read'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/pages', [
+    jrb_register_rest_route('jrb/v1', '/pages', [
         'methods' => 'POST',
         'callback' => 'openclaw_create_page',
         'permission_callback' => function() { return openclaw_verify_token_and_can('pages_create'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/pages/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/pages/(?P<id>\d+)', [
         'methods' => 'PUT',
         'callback' => 'openclaw_update_page',
         'permission_callback' => function() { return openclaw_verify_token_and_can('pages_update'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/pages/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/pages/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_delete_page',
         'permission_callback' => function() { return openclaw_verify_token_and_can('pages_delete'); },
     ]);
     
     // Users
-    register_rest_route('openclaw/v1', '/users', [
+    jrb_register_rest_route('jrb/v1', '/users', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_users',
         'permission_callback' => function() { return openclaw_verify_token_and_can('users_read'); },
     ]);
     
     // Plugins
-    register_rest_route('openclaw/v1', '/plugins', [
+    jrb_register_rest_route('jrb/v1', '/plugins', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_plugins',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_read'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/plugins/install', [
+    jrb_register_rest_route('jrb/v1', '/plugins/install', [
         'methods' => 'POST',
         'callback' => 'openclaw_install_plugin',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_install'); },
     ]);
-    
-    // Plugin/Theme Upload from ZIP
-    register_rest_route('openclaw/v1', '/debug/modules', [
-        'methods' => 'GET',
-        'callback' => function() {
-            $dir = plugin_dir_path(__FILE__) . 'modules/';
-            $files = array_diff(scandir($dir), ['.', '..']);
-            $details = [];
-            foreach ($files as $file) {
-                $details[$file] = [
-                    'size' => filesize($dir . $file),
-                    'mtime' => date('Y-m-d H:i:s', filemtime($dir . $file)),
-                    'content_sample' => substr(file_get_contents($dir . $file), 0, 500)
-                ];
-            }
-            return new WP_REST_Response([
-                'dir' => $dir,
-                'files' => $details,
-                'plugin_version' => OPENCLAW_API_VERSION
-            ], 200);
-        },
-        'permission_callback' => 'openclaw_verify_token',
-    ]);
 
-    register_rest_route('openclaw/v1', '/plugins/upload', [
+    jrb_register_rest_route('jrb/v1', '/plugins/upload', [
         'methods' => 'POST',
         'callback' => 'openclaw_upload_plugin',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_upload'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/plugins/(?P<slug>[^/]+)/activate', [
+    jrb_register_rest_route('jrb/v1', '/plugins/(?P<slug>[^/]+)/activate', [
         'methods' => 'POST',
         'callback' => 'openclaw_activate_plugin',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_activate'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/plugins/(?P<slug>[^/]+)/deactivate', [
+    jrb_register_rest_route('jrb/v1', '/plugins/(?P<slug>[^/]+)/deactivate', [
         'methods' => 'POST',
         'callback' => 'openclaw_deactivate_plugin',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_deactivate'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/plugins/(?P<slug>[^/]+)/update', [
+    jrb_register_rest_route('jrb/v1', '/plugins/(?P<slug>[^/]+)/update', [
         'methods' => 'POST',
         'callback' => 'openclaw_update_plugin',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_update'); },
     ]);
     
-    register_rest_route('openclaw/v1', '/plugins/(?P<slug>[^/]+)', [
+    jrb_register_rest_route('jrb/v1', '/plugins/(?P<slug>[^/]+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_delete_plugin',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_delete'); },
     ]);
     
     // Plugin search (WordPress.org)
-    register_rest_route('openclaw/v1', '/plugins/search', [
+    jrb_register_rest_route('jrb/v1', '/plugins/search', [
         'methods' => 'GET',
         'callback' => 'openclaw_search_plugins',
         'permission_callback' => function() { return openclaw_verify_token_and_can('plugins_search'); },
@@ -427,56 +419,56 @@ add_action('rest_api_init', function() {
 add_action('rest_api_init', function() {
     
     // List all menus
-    register_rest_route('openclaw/v1', '/menus', [
+    jrb_register_rest_route('jrb/v1', '/menus', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_menus',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_read'); },
     ]);
     
     // Get single menu with items
-    register_rest_route('openclaw/v1', '/menus/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/menus/(?P<id>\d+)', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_menu',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_read'); },
     ]);
     
     // Create menu
-    register_rest_route('openclaw/v1', '/menus', [
+    jrb_register_rest_route('jrb/v1', '/menus', [
         'methods' => 'POST',
         'callback' => 'openclaw_create_menu',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_create'); },
     ]);
     
     // Update menu name
-    register_rest_route('openclaw/v1', '/menus/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/menus/(?P<id>\d+)', [
         'methods' => 'PUT',
         'callback' => 'openclaw_update_menu',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_update'); },
     ]);
     
     // Delete menu
-    register_rest_route('openclaw/v1', '/menus/(?P<id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/menus/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_delete_menu',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_delete'); },
     ]);
     
     // Add menu item
-    register_rest_route('openclaw/v1', '/menus/(?P<id>\d+)/items', [
+    jrb_register_rest_route('jrb/v1', '/menus/(?P<id>\d+)/items', [
         'methods' => 'POST',
         'callback' => 'openclaw_add_menu_item',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_update'); },
     ]);
     
     // Remove menu item
-    register_rest_route('openclaw/v1', '/menus/(?P<id>\d+)/items/(?P<item_id>\d+)', [
+    jrb_register_rest_route('jrb/v1', '/menus/(?P<id>\d+)/items/(?P<item_id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_delete_menu_item',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_update'); },
     ]);
     
     // Reorder menu items
-    register_rest_route('openclaw/v1', '/menus/(?P<id>\d+)/items', [
+    jrb_register_rest_route('jrb/v1', '/menus/(?P<id>\d+)/items', [
         'methods' => 'PUT',
         'callback' => 'openclaw_reorder_menu_items',
         'permission_callback' => function() { return openclaw_verify_token_and_can('menus_update'); },
@@ -487,35 +479,35 @@ add_action('rest_api_init', function() {
 add_action('rest_api_init', function() {
     
     // Get current active theme
-    register_rest_route('openclaw/v1', '/theme', [
+    jrb_register_rest_route('jrb/v1', '/theme', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_active_theme',
         'permission_callback' => function() { return openclaw_verify_token_and_can('themes_read'); },
     ]);
     
     // List installed themes
-    register_rest_route('openclaw/v1', '/themes', [
+    jrb_register_rest_route('jrb/v1', '/themes', [
         'methods' => 'GET',
         'callback' => 'openclaw_get_themes',
         'permission_callback' => function() { return openclaw_verify_token_and_can('themes_read'); },
     ]);
     
     // Switch active theme
-    register_rest_route('openclaw/v1', '/theme', [
+    jrb_register_rest_route('jrb/v1', '/theme', [
         'methods' => 'PUT',
         'callback' => 'openclaw_switch_theme',
         'permission_callback' => function() { return openclaw_verify_token_and_can('themes_switch'); },
     ]);
     
     // Install theme from ZIP URL
-    register_rest_route('openclaw/v1', '/theme/install', [
+    jrb_register_rest_route('jrb/v1', '/theme/install', [
         'methods' => 'POST',
         'callback' => 'openclaw_install_theme_from_url',
         'permission_callback' => function() { return openclaw_verify_token_and_can('themes_install'); },
     ]);
     
     // Delete theme
-    register_rest_route('openclaw/v1', '/themes/(?P<stylesheet>[a-zA-Z0-9\-_]+)', [
+    jrb_register_rest_route('jrb/v1', '/themes/(?P<stylesheet>[a-zA-Z0-9\-_]+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_delete_theme',
         'permission_callback' => function() { return openclaw_verify_token_and_can('themes_delete'); },
@@ -1252,15 +1244,22 @@ add_action('plugins_loaded', function() {
 }, 5);
 
 /**
- * Verify API token from X-OpenClaw-Token header
+ * Verify API token from X-JRBRemoteSite-Token header
  * Uses timing-safe comparison and hashed token storage
  * Supports legacy plaintext tokens for migration
+ * Backward compatible with X-OpenClaw-Token (deprecated, removed in v7.0.0)
  */
 function openclaw_verify_token() {
-    $header = isset($_SERVER['HTTP_X_OPENCLAW_TOKEN']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_X_OPENCLAW_TOKEN'])) : '';
+    // Check new header first, fallback to legacy for backward compatibility
+    $header = isset($_SERVER['HTTP_X_JRBREMOTESITE_TOKEN']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_X_JRBREMOTESITE_TOKEN'])) : '';
     
     if (empty($header)) {
-        return new WP_Error('missing_header', 'Missing X-OpenClaw-Token header', ['status' => 401]);
+        // Fallback to legacy header (deprecated)
+        $header = isset($_SERVER['HTTP_X_OPENCLAW_TOKEN']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_X_OPENCLAW_TOKEN'])) : '';
+    }
+    
+    if (empty($header)) {
+        return new WP_Error('missing_header', 'Missing X-JRBRemoteSite-Token header (or legacy X-OpenClaw-Token)', ['status' => 401]);
     }
     
     // Check for hashed token first (preferred)
@@ -1272,18 +1271,10 @@ function openclaw_verify_token() {
         }
     }
     
-    // Fallback to legacy plaintext token (for migration)
-    $legacy_token = get_option('openclaw_api_token');
-    if (!empty($legacy_token)) {
-        if (hash_equals($legacy_token, $header)) {
-            // Migrate to hashed storage
-            update_option('openclaw_api_token_hash', wp_hash($legacy_token));
-            delete_option('openclaw_api_token');
-            return true;
-        }
-    }
+    // Note: Legacy plaintext token support removed in v6.5.0 for security.
+    // Users upgrading from older versions must regenerate their API token.
     
-    if (empty($token_hash) && empty($legacy_token)) {
+    if (empty($token_hash)) {
         return new WP_Error('no_token', 'API token not configured. Go to Settings → JRB Remote API.', ['status' => 500]);
     }
     
@@ -2690,7 +2681,7 @@ function openclaw_api_admin_page() {
     ?>
     <div class="wrap">
         <h1>JRB Remote API</h1>
-        <p>REST API for OpenClaw remote site management. Use <code>X-OpenClaw-Token</code> header for authentication.</p>
+        <p>REST API for JRB remote site management. Use <code>X-JRBRemoteSite-Token</code> header for authentication.</p>
         
         <h2>API Token</h2>
         <?php if ($new_token): ?>
@@ -2699,8 +2690,8 @@ function openclaw_api_admin_page() {
                 <p><code style="background:#f0f0f1;padding:10px;display:block;word-break:break-all;font-size:14px;font-weight:bold;"><?php echo esc_html($new_token); ?></code></p>
                 <p style="color:#666;font-size:12px;">Store this securely. Tokens are stored hashed and cannot be recovered.</p>
             </div>
-            <pre style="background:#f0f0f1;padding:15px;font-size:12px;margin-top:15px;">curl -H "X-OpenClaw-Token: <?php echo esc_html($new_token); ?>" \
-    https://yoursite.com/wp-json/openclaw/v1/site</pre>
+            <pre style="background:#f0f0f1;padding:15px;font-size:12px;margin-top:15px;">curl -H "X-JRBRemoteSite-Token: <?php echo esc_html($new_token); ?>" \
+    https://yoursite.com/wp-json/jrb/v1/site</pre>
             <?php
             // Token shown once only - not stored anywhere
             ?>

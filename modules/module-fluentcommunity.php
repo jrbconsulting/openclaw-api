@@ -8,7 +8,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-class OpenClaw_FluentCommunity_Module {
+class JRB_FluentCommunity_Module {
 
     private static $active = false;
 
@@ -52,46 +52,46 @@ class OpenClaw_FluentCommunity_Module {
         register_rest_route('openclaw/v1', '/community/posts', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_posts'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_posts_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_posts_read'); },
         ]);
         register_rest_route('openclaw/v1', '/community/posts/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_post'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_posts_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_posts_read'); },
         ]);
         register_rest_route('openclaw/v1', '/community/posts', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_post'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_posts_create'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_posts_create'); },
         ]);
         register_rest_route('openclaw/v1', '/community/posts/(?P<id>\d+)', [
             'methods' => 'PUT',
             'callback' => [__CLASS__, 'update_post'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_posts_update'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_posts_update'); },
         ]);
         register_rest_route('openclaw/v1', '/community/posts/(?P<id>\d+)', [
             'methods' => 'DELETE',
             'callback' => [__CLASS__, 'delete_post'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_posts_delete'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_posts_delete'); },
         ]);
 
         // Groups
         register_rest_route('openclaw/v1', '/community/groups', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_groups'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_groups_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_groups_read'); },
         ]);
         register_rest_route('openclaw/v1', '/community/groups/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_group'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_groups_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_groups_read'); },
         ]);
 
         // Members
         register_rest_route('openclaw/v1', '/community/members', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_members'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('community_members_read'); },
+            'permission_callback' => function() { return jrb_verify_token_and_can('community_members_read'); },
         ]);
     }
 

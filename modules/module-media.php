@@ -24,14 +24,14 @@ if (!defined('OPENCLAW_MEDIA_MAX_UPLOAD_SIZE')) {
 /**
  * Security: Generate CSRF token for upload forms
  */
-function openclaw_generate_media_csrf_token() {
+function jrb_generate_media_csrf_token() {
     return wp_create_nonce('openclaw_media_upload');
 }
 
 /**
  * Security: Verify CSRF token for upload requests
  */
-function openclaw_verify_media_csrf($request) {
+function jrb_verify_media_csrf($request) {
     $token = $request->get_header('X-CSRF-Token') ?: $request->get_param('csrf_token');
     if (empty($token) || !wp_verify_nonce($token, 'openclaw_media_upload')) {
         return false;
@@ -47,7 +47,7 @@ add_action('rest_api_init', function() {
     register_rest_route('openclaw/v1', '/media', [
         'methods' => 'GET',
         'callback' => 'openclaw_media_list',
-        'permission_callback' => function() { return openclaw_verify_token_and_can('media_read'); },
+        'permission_callback' => function() { return jrb_verify_token_and_can('media_read'); },
         'args' => [
             'page' => [
                 'type' => 'integer',
@@ -104,7 +104,7 @@ add_action('rest_api_init', function() {
                 return new WP_Error('csrf_invalid', 'CSRF token validation failed', ['status' => 403]);
             }
             
-            return openclaw_verify_token_and_can('media_upload'); 
+            return jrb_verify_token_and_can('media_upload'); 
         },
     ]);
     
@@ -112,7 +112,7 @@ add_action('rest_api_init', function() {
     register_rest_route('openclaw/v1', '/media/(?P<id>\d+)', [
         'methods' => 'GET',
         'callback' => 'openclaw_media_get',
-        'permission_callback' => function() { return openclaw_verify_token_and_can('media_read'); },
+        'permission_callback' => function() { return jrb_verify_token_and_can('media_read'); },
         'args' => [
             'id' => [
                 'type' => 'integer',
@@ -125,7 +125,7 @@ add_action('rest_api_init', function() {
     register_rest_route('openclaw/v1', '/media/(?P<id>\d+)', [
         'methods' => 'PUT',
         'callback' => 'openclaw_media_update',
-        'permission_callback' => function() { return openclaw_verify_token_and_can('media_edit'); },
+        'permission_callback' => function() { return jrb_verify_token_and_can('media_edit'); },
         'args' => [
             'id' => [
                 'type' => 'integer',
@@ -138,7 +138,7 @@ add_action('rest_api_init', function() {
     register_rest_route('openclaw/v1', '/media/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'openclaw_media_delete',
-        'permission_callback' => function() { return openclaw_verify_token_and_can('media_delete'); },
+        'permission_callback' => function() { return jrb_verify_token_and_can('media_delete'); },
         'args' => [
             'id' => [
                 'type' => 'integer',
@@ -169,7 +169,7 @@ add_filter('openclaw_module_capabilities', function($caps) {
  * 
  * @return array Array of allowed MIME types
  */
-function openclaw_get_allowed_mime_types() {
+function jrb_get_allowed_mime_types() {
     // Whitelist of safe mime types for upload
     $allowed = [
         // Images
@@ -191,7 +191,7 @@ function openclaw_get_allowed_mime_types() {
  * 
  * @return int Maximum size in bytes
  */
-function openclaw_get_max_upload_size() {
+function jrb_get_max_upload_size() {
     // Default 10MB, filterable
     $max_size = apply_filters('openclaw_max_upload_size', 10 * 1024 * 1024);
     
@@ -207,7 +207,7 @@ function openclaw_get_max_upload_size() {
  * @param string $filename Original filename
  * @return string|WP_Error Sanitized filename or error
  */
-function openclaw_sanitize_filename($filename) {
+function jrb_sanitize_filename($filename) {
     // CRITICAL: Path traversal prevention - remove directory separators
     $filename = str_replace(['../', '..\\', './', '\\'], '', $filename);
     
@@ -268,7 +268,7 @@ function openclaw_sanitize_filename($filename) {
  * @param string $file_path Path to uploaded file
  * @return bool|WP_Error True if valid, WP_Error if not
  */
-function openclaw_validate_svg($file_path) {
+function jrb_validate_svg($file_path) {
     // SVGs can contain malicious scripts, validate carefully
     // CRITICAL: Limit file read to prevent DoS via huge files
     $max_size = apply_filters('openclaw_svg_validation_max_size', 256 * 1024); // 256KB max for SVG scanning
@@ -355,7 +355,7 @@ function openclaw_validate_svg($file_path) {
  * @param WP_REST_Request $request
  * @return WP_REST_Response
  */
-function openclaw_media_list($request) {
+function jrb_media_list($request) {
     $args = [
         'post_type' => 'attachment',
         'post_status' => 'inherit',
@@ -409,7 +409,7 @@ function openclaw_media_list($request) {
  * @param WP_Post $post Attachment post
  * @return array Formatted item
  */
-function openclaw_format_media_item($post) {
+function jrb_format_media_item($post) {
     $meta = wp_get_attachment_metadata($post->ID);
     $url = wp_get_attachment_url($post->ID);
     
@@ -464,7 +464,7 @@ function openclaw_format_media_item($post) {
  * @param WP_REST_Request $request
  * @return WP_REST_Response|WP_Error
  */
-function openclaw_media_upload($request) {
+function jrb_media_upload($request) {
     
     // Get file from request
     $files = $request->get_file_params();
@@ -704,7 +704,7 @@ function openclaw_media_upload($request) {
  * @param WP_REST_Request $request
  * @return WP_REST_Response|WP_Error
  */
-function openclaw_media_get($request) {
+function jrb_media_get($request) {
     $id = $request->get_param('id');
     $post = get_post($id);
     
@@ -725,7 +725,7 @@ function openclaw_media_get($request) {
  * @param WP_REST_Request $request
  * @return WP_REST_Response|WP_Error
  */
-function openclaw_media_update($request) {
+function jrb_media_update($request) {
     $id = $request->get_param('id');
     $post = get_post($id);
     
@@ -783,7 +783,7 @@ function openclaw_media_update($request) {
  * @param WP_REST_Request $request
  * @return WP_REST_Response|WP_Error
  */
-function openclaw_media_delete($request) {
+function jrb_media_delete($request) {
     $id = $request->get_param('id');
     $force = $request->get_param('force');
     

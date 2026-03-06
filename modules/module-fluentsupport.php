@@ -11,7 +11,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-class OpenClaw_FluentSupport_Module {
+class JRB_FluentSupport_Module {
 
     private static $active = false;
 
@@ -55,69 +55,69 @@ class OpenClaw_FluentSupport_Module {
         register_rest_route('openclaw/v1', '/support/tickets', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_tickets'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_tickets_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_tickets_read'); }
         ]);
         register_rest_route('openclaw/v1', '/support/tickets', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'create_ticket'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_tickets_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_tickets_create'); }
         ]);
         register_rest_route('openclaw/v1', '/support/tickets/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_ticket'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_tickets_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_tickets_read'); }
         ]);
         register_rest_route('openclaw/v1', '/support/tickets/(?P<id>\d+)', [
             'methods' => 'PUT',
             'callback' => [__CLASS__, 'update_ticket'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_tickets_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_tickets_create'); }
         ]);
 
         // Responses
         register_rest_route('openclaw/v1', '/support/respond', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'add_response'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_responses_create'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_responses_create'); }
         ]);
 
         // Customers
         register_rest_route('openclaw/v1', '/support/customers', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_customers'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_customers_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_customers_read'); }
         ]);
         register_rest_route('openclaw/v1', '/support/customers/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_customer'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_customers_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_customers_read'); }
         ]);
 
         // Assignment
         register_rest_route('openclaw/v1', '/support/assign', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'assign_ticket'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_tickets_assign'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_tickets_assign'); }
         ]);
 
         // Stats
         register_rest_route('openclaw/v1', '/support/stats', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_stats'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_tickets_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_tickets_read'); }
         ]);
 
         // Search
         register_rest_route('openclaw/v1', '/support/search', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'search_tickets'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_tickets_read'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_tickets_read'); }
         ]);
         
         // Sync: FluentForms → FluentSupport
         register_rest_route('openclaw/v1', '/support/sync-forms', [
             'methods' => 'POST',
             'callback' => [__CLASS__, 'sync_forms_to_tickets'],
-            'permission_callback' => function() { return openclaw_verify_token_and_can('support_sync'); }
+            'permission_callback' => function() { return jrb_verify_token_and_can('support_sync'); }
         ]);
     }
 
