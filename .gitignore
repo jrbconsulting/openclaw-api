@@ -13,3 +13,4 @@ node_modules/
 # These are kept in /assets for SVN but shouldn't clutter the GitHub production releases
 /assets/
  trunk/assets/
+.a0proj/
